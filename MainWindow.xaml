@@ -5,17 +5,32 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WPF_Traslate_Test"
         mc:Ignorable="d"
-        KeyDown="myTestKey"
-        Title="MainWindow" Height="150" Width="200" WindowStartupLocation="CenterScreen" WindowState="Normal" WindowStyle="None" AllowsTransparency="True" Visibility="Visible">
-    <Grid VerticalAlignment="Bottom" HorizontalAlignment="Right" Height="50" Width="170">
-        <Button x:Name="Bot" Content="Button" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Click="Button_Click"/>
-    </Grid>
-    
-    
       
+        KeyDown="myTestKey"
+        MouseDoubleClick="eventsView_MouseDoubleClick"
+        Title="MainWindow" Height="150" Width="200" WindowStartupLocation="CenterScreen" WindowState="Normal" WindowStyle="None" AllowsTransparency="True" Visibility="Visible">
+    <Window.Background >
+        <ImageBrush></ImageBrush>
+    </Window.Background>
+
     
-    
+        
+        <Grid VerticalAlignment="Bottom" HorizontalAlignment="Right" Height="50" Width="170">
+            <Grid.Background>
+                <ImageBrush/>
+            </Grid.Background>
+            <Button x:Name="Bot" Content="Button" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Click="Button_Click"/>
+        </Grid>
+
+
+
+
+
+
+
+
     
     
     
 </Window>
+    

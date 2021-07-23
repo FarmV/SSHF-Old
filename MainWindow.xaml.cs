@@ -1,10 +1,17 @@
-﻿using System;
+﻿using HtmlAgilityPack;
+using OpenQA.Selenium;
+using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.Interactions;
+using OpenQA.Selenium.Support.UI;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -15,7 +22,10 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Brushes = System.Windows.Media.Brushes;
 using Point = System.Windows.Point;
+
+[assembly: DisableDpiAwareness]
 
 namespace WPF_Traslate_Test
 {
@@ -29,85 +39,161 @@ namespace WPF_Traslate_Test
             if (e.Key == Key.LeftAlt && e.Key == Key.F)
             {
                 Bot.Content = "true";
-            }    
+            }
         }
-
+        private void eventsView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            this.Close();
+        }
         public void myTestKey(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Space)
             {
                 Bot.Content = "true";
             }
-        }  
+        }
         public MainWindow()
         {
             InitializeComponent();
-           // One.ShowInTaskbar = true;
-
-
         }
 
-
-    
-        public void MySize(int x, int y)
-        {
-            One.Width = x;
-            One.Height = y;
-        }
-
-        [System.ComponentModel.TypeConverter("System.Windows.LengthConverter," +
-        " PresentationFramework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, Custom=null")]
         public async void MyFolow()
         {
-            //One.Top = 0;
-            //One.Left = 0;
+            //double screenRealWidth = SystemParameters.PrimaryScreenWidth * (dpiBase * getScalingFactor()) / dpiBase;
+            //double screenRealHeight = SystemParameters.PrimaryScreenHeight * (dpiBase * getScalingFactor()) / dpiBase;
+
+            //Matrix m =
+            //PresentationSource.FromVisual(Application.Current.MainWindow).CompositionTarget.TransformToDevice;
+            //double dx = m.M11;
+            //double dy = m.M22;
+
             await Task.Run(() =>
             {
-                Dispatcher.Invoke(async() => 
+                Dispatcher.Invoke(async () =>
                 {
                     for (; ; )
                     {
                         Point point = GetCursorPosition();
+
+                        //point.Y = SystemParameters.PrimaryScreenWidth*(96 * 1.25) / 96;
+                        //point.X = SystemParameters.PrimaryScreenHeight * (96 * 1.25) / 96;
                         await Task.Delay(10);
-                        One.Top = point.Y;
-                        One.Left = point.X;
+                        One.Top = point.Y + 10;
+                        One.Left = point.X + 10;
                     }
 
 
                 });
 
             });
-            //await Task.Run(() =>
-            //{
-            //    Dispatcher.Invoke(() =>
-            //    {
-
-            //        One.Top = 300;
-            //        One.Left = 500;
 
 
-            //    });
-                
-            //});
+
 
         }
-       
-        private async void Button_Click(object sender, RoutedEventArgs e)
+        //[DllImport("gdi32.dll")]
+        //static extern int GetDeviceCaps(IntPtr hdc, int nIndex);
+        //public enum DeviceCap
+        //{
+        //    VERTRES = 10,
+        //    DESKTOPVERTRES = 117,
+
+        //    // http://pinvoke.net/default.aspx/gdi32/GetDeviceCaps.html
+        //}
+
+        //float dpiBase = 96;
+        //private float getScalingFactor()
+        //{
+        //    Graphics g = Graphics.FromHwnd(IntPtr.Zero);
+        //    IntPtr desktop = g.GetHdc();
+        //    int LogicalScreenHeight = GetDeviceCaps(desktop, (int)DeviceCap.VERTRES);
+        //    int PhysicalScreenHeight = GetDeviceCaps(desktop, (int)DeviceCap.DESKTOPVERTRES);
+
+        //    float ScreenScalingFactor = (float)PhysicalScreenHeight / (float)LogicalScreenHeight;
+
+        //    return ScreenScalingFactor; // 1.25 = 125%
+        //}
+
+
+        public static string MyStrCount()
         {
-            // MySize(400,200);
-            // App.Current.Dispatcher.Invoke(() => { MyFolow(); });
+
+            
+
+
+            return "";
+        }
+
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            
+            BitmapSource imagebufer = BuferImage();
+            if (imagebufer == null)
+            {
+                return;
+            }
+            using (FileStream fileStream = new FileStream(@"mytest\mytest.PNG", FileMode.OpenOrCreate))
+            {
+                BitmapEncoder encoder = new PngBitmapEncoder();
+                encoder.Frames.Add(BitmapFrame.Create(imagebufer));
+                encoder.Save(fileStream);
+
+            }
+            //One.Width = imagebufer.Width;
+            //One.Height = imagebufer.Height;
+            One.Width = 1920;
+            One.Height = 1440;
+            string scanimage = MyClassTranslateText.MyTrasletImage().Result;
+            if (scanimage == null)
+            {
+                return;
+            }
+            MyClassTranslateText.Query = scanimage;
+            string resulttranslate = MyClassTranslateText.MyTranslate(scanimage).Result;
+            if (resulttranslate == null)
+            {
+                return;
+            }
+            string resulttranslate1 = MyClassTranslateText.MyReplaceforpng(resulttranslate).Result;
+            //System.Drawing.StringFormat stringFormat = new StringFormat();
+            //stringFormat.Alignment = StringAlignment.Near;
+            ////stringFormat.LineAlignment = StringAlignment.Far;
+            Bitmap a = new Bitmap(1920, 1440);
+            Graphics g = Graphics.FromImage(a);
+            //string[] res;
+            //void aReplacestring()
+            //{
+            //    string[] words = resulttranslate.Split(new char[] { ' ' });
+
+            //    res = words;
+            //}
+
+            g.DrawString(resulttranslate1, new Font("Arial", 30), new SolidBrush(System.Drawing.Color.Goldenrod), 0f,0f); 
+           
+            g.Dispose();
+            FileStream fileS = new FileStream(@"mytest\testo.PNG", FileMode.OpenOrCreate);
+            a.Save(fileS,System.Drawing.Imaging.ImageFormat.Png);
+            a.Dispose();
+            fileS.Dispose();
+            
             Dispatcher.Invoke(new Action(MyFolow));
 
-            //  RenderTargetBitmap bitmap = new RenderTargetBitmap();
-            //Bitmap printscreen = new Bitmap(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height);
-            //Graphics graphics = Graphics.FromImage(printscreen as Image);
-            //graphics.CopyFromScreen(0, 0, 0, 0, printscreen.Size);
-            //printscreen.Save("D:\\1.jpeg", System.Drawing.Imaging.ImageFormat.Jpeg);
-            // MyTest.MyMethod();
-            // MyTest.SaveClipboardImageToFile(@"C:\Текущие проэкты 2.0\test\Test.PNG");
+            Bot.Visibility = Visibility.Hidden;
+            Background = new ImageBrush(new BitmapImage(new Uri(@"C:\Users\user\source\repos\WPF_Traslate_Test\bin\Debug\net5.0-windows\mytest\testo.PNG")));
+
+
         }
 
-       
+
+        private static BitmapSource BuferImage()
+        {
+            // var image1 = new BitmapImage(new Uri(@"C:\Users\user\Pictures\2.png"));
+            BitmapSource image = Clipboard.GetImage();
+            return image ?? null;
+        }
+
+
 
         [StructLayout(LayoutKind.Sequential)]
         public struct POINT
@@ -143,20 +229,12 @@ namespace WPF_Traslate_Test
 }
 class MyTest
 {
-    public static void MyMethod()
-    {
-       
 
-
-       
-
-        Console.WriteLine();
-    }
 
     public static void SaveClipboardImageToFile(string filePath)
     {
         BitmapSource image = Clipboard.GetImage();
-        if (image== null)
+        if (image == null)
         {
             return;
         }
@@ -194,4 +272,168 @@ class MyTest
     }
 
 
+}
+public class MyClassTranslateText
+{
+    public static string Query = @"Client Packs — Module makers can now create Client Packs in the toolset, which can be
+                               placed in clients My Documents\pwc\ folder to allow users to connect to Multiplayer
+                               Games for which they do not have the module.These.pwc files contain only the data
+                               absolutely necessary to run the module on the client side are useful if, for instance, you
+                               are running a persistent world and do not wish to allow clients to open your module with
+                               all of its areas, creatures, and scripts visible.";
+
+    private static string SearchQuery = "Hello World! I am not a programmer";
+    private static string urlbody = $"https://www.deepl.com/translator#en/ru/{SearchQuery}";
+    public static void myReplayser()
+    {
+
+        Query.Replace(" ", "%20");
+
+        SearchQuery = Query;
+        urlbody = $"https://www.deepl.com/translator#en/ru/{SearchQuery}";
+
+    }
+    public static Task<string> MyTranslate(string transbody)
+    {
+        Query = transbody;
+        myReplayser();
+
+
+        ChromeDriver driver = new ChromeDriver(@"C:\Текущие проэкты 2.0");
+        driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(30);
+        driver.Navigate().GoToUrl("chrome://settings/");
+        driver.ExecuteScript("chrome.settingsPrivate.setDefaultZoom(0.7);");
+        driver.Navigate().GoToUrl(urlbody);
+
+
+        IWebElement results = driver.FindElement(By.XPath("//*[@id='target-dummydiv']"));
+        ((IJavaScriptExecutor)driver).ExecuteScript("document.body.style.transform='scale(0.5)';");
+        string res;
+        for (int i = 0; ; i++)
+        {
+            string aaa = results.GetAttribute("innerHTML");
+            Thread.Sleep(300);
+            //Console.WriteLine("test");
+            if (aaa != "" && aaa != "\r\n")
+            {
+                res = aaa.Replace("\r", "").Replace("\n", "");
+                break;
+            }
+        }
+        Console.WriteLine(res);
+        HtmlDocument doc = new HtmlDocument();
+        doc.LoadHtml(results.GetAttribute("innerHTML"));
+        string translate = doc.Text;
+        driver.Dispose();
+        return Task.FromResult(translate) ?? null;
+
+    }
+
+    public static Task<string> MyTrasletImage()
+    {     
+        ChromeOptions option = new ChromeOptions();
+        option.AddArguments("--window-size=1920,1080");
+        ChromeDriver driver = new ChromeDriver(@"C:\Текущие проэкты 2.0", option);
+
+        driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(15.00);
+        driver.Manage().Timeouts().PageLoad = TimeSpan.FromSeconds(10.00);
+        driver.Manage().Timeouts().AsynchronousJavaScript = TimeSpan.FromSeconds(15.00);
+        Actions actions = new Actions(driver);
+        driver.Navigate().GoToUrl("https://img2txt.com/ru");
+        // driver.GetDevToolsSession(); 
+        string filePath = @"C:\Users\user\source\repos\WPF_Traslate_Test\bin\Debug\net5.0-windows\mytest\mytest.PNG";
+        IWebElement langMenu = driver.FindElement(By.XPath("//*[@class='select2-selection__rendered']"));
+       // WebElement dynamicElement = new WebDriverWait(driver, TimeSpan.FromSeconds(20)).Until();
+        IWebElement cooce = driver.FindElement(By.XPath("//*[@aria-label='dismiss cookie message']"));
+        cooce.Click();
+        ((IJavaScriptExecutor)driver).ExecuteScript("document.body.style.transform='scale(0.5)';");
+        actions.MoveToElement(langMenu);
+        langMenu.Click();
+        IWebElement contexLangMenu = driver.FindElement(By.XPath("//*[@class='select2-selection select2-selection--single']")); ;
+        contexLangMenu.SendKeys("webdriver" + Keys.Down);
+        contexLangMenu.SendKeys("webdriver" + Keys.Down);
+        contexLangMenu.SendKeys("webdriver" + Keys.Enter);
+        IWebElement results = driver.FindElement(By.XPath("//*[@class='dz-hidden-input']"));
+        results.SendKeys(filePath);
+        Thread.Sleep(500);
+        IWebElement downoad = driver.FindElement(By.XPath("//*[@class='form-bottom']"));
+        downoad.Click();
+        Thread.Sleep(15000);
+
+        IWebElement myrestranslate = driver.FindElement(By.XPath("//*[@class='results-text result']"));
+        HtmlDocument doc = new HtmlDocument();
+        doc.LoadHtml(myrestranslate.GetAttribute("innerHTML"));
+        string Mytransresult = doc.DocumentNode.FirstChild.EndNode.NextSibling.InnerHtml.Replace("", "");
+
+
+
+
+
+
+        driver.Dispose();
+        return Task.FromResult(Mytransresult) ?? null;
+
+
+
+
+    }
+    public static Task<string> MyReplaceforpng(string test)
+    {
+        List<int> vs = new List<int>();
+        for (int i = 0; ; i++)
+        {
+            int mystr = test.IndexOf(' ', i);
+            if (mystr == -1)
+            {
+                break;
+            }
+            vs.Add(mystr);
+
+        }
+        IEnumerable<int> res = vs.Distinct();
+        List<int> asd = res.ToList();
+        List<int> myrescount = new List<int>();
+        int count = default;
+        for (int i = 0; i < asd.Count(); i++)
+        {
+            if (count == default)
+            {
+                if (asd[i] > 60)
+                {
+                    count = asd[i - 1];
+                    myrescount.Add(asd[i - 1]);
+                }
+
+            }
+            else
+            {
+                if (asd[i] - count > 60)
+                {
+                    myrescount.Add(asd[i - 1]);
+                    count = asd[i - 1];
+                }
+                else
+                {
+
+                }
+            }
+
+
+        }
+        string myASSSS = test;
+        int count2 = default;
+        for (int i = 0; i < myrescount.Count; i++)
+        {
+            //if (count2 == default)
+            //{
+            //    myASSSS = myASSSS.Remove(myrescount[i] + 1, 1).Insert(myrescount[i] + 1, Environment.NewLine);
+            //    count2 = 1;
+            //}
+           // else
+           // {
+                myASSSS = myASSSS.Remove(myrescount[i] + 1 * i, 1).Insert(myrescount[i] + 1 * i, Environment.NewLine);
+          //  }
+        }
+        return Task.FromResult(myASSSS);
+    }
 }
