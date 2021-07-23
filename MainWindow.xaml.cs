@@ -22,6 +22,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Text.RegularExpressions;
 using Brushes = System.Windows.Media.Brushes;
 using Point = System.Windows.Point;
 
@@ -126,8 +127,7 @@ namespace WPF_Traslate_Test
 
 
         private void Button_Click(object sender, RoutedEventArgs e)
-        {
-            
+        {          
             BitmapSource imagebufer = BuferImage();
             if (imagebufer == null)
             {
@@ -140,8 +140,6 @@ namespace WPF_Traslate_Test
                 encoder.Save(fileStream);
 
             }
-            //One.Width = imagebufer.Width;
-            //One.Height = imagebufer.Height;
             One.Width = 1920;
             One.Height = 1440;
             string scanimage = MyClassTranslateText.MyTrasletImage().Result;
@@ -156,29 +154,15 @@ namespace WPF_Traslate_Test
                 return;
             }
             string resulttranslate1 = MyClassTranslateText.MyReplaceforpng(resulttranslate).Result;
-            //System.Drawing.StringFormat stringFormat = new StringFormat();
-            //stringFormat.Alignment = StringAlignment.Near;
-            ////stringFormat.LineAlignment = StringAlignment.Far;
             Bitmap a = new Bitmap(1920, 1440);
             Graphics g = Graphics.FromImage(a);
-            //string[] res;
-            //void aReplacestring()
-            //{
-            //    string[] words = resulttranslate.Split(new char[] { ' ' });
-
-            //    res = words;
-            //}
-
-            g.DrawString(resulttranslate1, new Font("Arial", 30), new SolidBrush(System.Drawing.Color.Goldenrod), 0f,0f); 
-           
+            g.DrawString(resulttranslate1, new Font("Arial", 30), new SolidBrush(System.Drawing.Color.Goldenrod), 0f,0f);         
             g.Dispose();
             FileStream fileS = new FileStream(@"mytest\testo.PNG", FileMode.OpenOrCreate);
             a.Save(fileS,System.Drawing.Imaging.ImageFormat.Png);
             a.Dispose();
-            fileS.Dispose();
-            
+            fileS.Dispose();          
             Dispatcher.Invoke(new Action(MyFolow));
-
             Bot.Visibility = Visibility.Hidden;
             Background = new ImageBrush(new BitmapImage(new Uri(@"C:\Users\user\source\repos\WPF_Traslate_Test\bin\Debug\net5.0-windows\mytest\testo.PNG")));
 
@@ -275,24 +259,20 @@ class MyTest
 }
 public class MyClassTranslateText
 {
-    public static string Query = @"Client Packs — Module makers can now create Client Packs in the toolset, which can be
-                               placed in clients My Documents\pwc\ folder to allow users to connect to Multiplayer
-                               Games for which they do not have the module.These.pwc files contain only the data
-                               absolutely necessary to run the module on the client side are useful if, for instance, you
-                               are running a persistent world and do not wish to allow clients to open your module with
-                               all of its areas, creatures, and scripts visible.";
+    public static string Query = $"Client Packs — Module makers can now create Client Packs in the toolset, which can be placed in clients My Documents\u005Cpwc\u005C folder to allow users to connect to Multiplayer Games for which they do not have the module.These.pwc files contain only the dataabsolutely necessary to run the module on the client side are useful if, for instance, youare running a persistent world and do not wish to allow clients to open your module withall of its areas, creatures, and scripts visible.";
 
     private static string SearchQuery = "Hello World! I am not a programmer";
     private static string urlbody = $"https://www.deepl.com/translator#en/ru/{SearchQuery}";
     public static void myReplayser()
     {
 
-        Query.Replace(" ", "%20");
+        Query = Query.Replace(@"\r\n","").Replace(" ", "%20").Replace("#", "%23");
 
         SearchQuery = Query;
         urlbody = $"https://www.deepl.com/translator#en/ru/{SearchQuery}";
 
     }
+
     public static Task<string> MyTranslate(string transbody)
     {
         Query = transbody;
@@ -307,7 +287,8 @@ public class MyClassTranslateText
 
 
         IWebElement results = driver.FindElement(By.XPath("//*[@id='target-dummydiv']"));
-        ((IJavaScriptExecutor)driver).ExecuteScript("document.body.style.transform='scale(0.5)';");
+        Thread.Sleep(5000);
+      //  ((IJavaScriptExecutor)driver).ExecuteScript("document.body.style.transform='scale(0.5)';");
         string res;
         for (int i = 0; ; i++)
         {
@@ -338,6 +319,7 @@ public class MyClassTranslateText
         driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(15.00);
         driver.Manage().Timeouts().PageLoad = TimeSpan.FromSeconds(10.00);
         driver.Manage().Timeouts().AsynchronousJavaScript = TimeSpan.FromSeconds(15.00);
+        WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(30.00));
         Actions actions = new Actions(driver);
         driver.Navigate().GoToUrl("https://img2txt.com/ru");
         // driver.GetDevToolsSession(); 
@@ -358,14 +340,15 @@ public class MyClassTranslateText
         Thread.Sleep(500);
         IWebElement downoad = driver.FindElement(By.XPath("//*[@class='form-bottom']"));
         downoad.Click();
-        Thread.Sleep(15000);
-
-        IWebElement myrestranslate = driver.FindElement(By.XPath("//*[@class='results-text result']"));
+       // Thread.Sleep(15000);
+        IWebElement myrestranslate = wait.Until(SeleniumExtras.WaitHelpers.ExpectedConditions.ElementToBeClickable(By.XPath("//*[@class='results-text result']")));
+       // IWebElement myrestranslate = driver.FindElement(By.XPath("//*[@class='results-text result']"));
         HtmlDocument doc = new HtmlDocument();
         doc.LoadHtml(myrestranslate.GetAttribute("innerHTML"));
         string Mytransresult = doc.DocumentNode.FirstChild.EndNode.NextSibling.InnerHtml.Replace("", "");
 
-
+       // IWebElement element = wait.Until(SeleniumExtras.WaitHelpers.ExpectedConditions.ElementIsVisible(By.Id("content-section")));
+        //IWebElement element2 = wait.Until(SeleniumExtras.WaitHelpers.ExpectedConditions.ElementToBeClickable(By.XPath("//*[@class='results-text result']")));
 
 
 
@@ -377,12 +360,12 @@ public class MyClassTranslateText
 
 
     }
-    public static Task<string> MyReplaceforpng(string test)
+    public static Task<string> MyReplaceforpng(string rep)
     {
         List<int> vs = new List<int>();
         for (int i = 0; ; i++)
         {
-            int mystr = test.IndexOf(' ', i);
+            int mystr = rep.IndexOf(' ', i);
             if (mystr == -1)
             {
                 break;
@@ -420,19 +403,10 @@ public class MyClassTranslateText
 
 
         }
-        string myASSSS = test;
-        int count2 = default;
+        string myASSSS = rep;
         for (int i = 0; i < myrescount.Count; i++)
-        {
-            //if (count2 == default)
-            //{
-            //    myASSSS = myASSSS.Remove(myrescount[i] + 1, 1).Insert(myrescount[i] + 1, Environment.NewLine);
-            //    count2 = 1;
-            //}
-           // else
-           // {
-                myASSSS = myASSSS.Remove(myrescount[i] + 1 * i, 1).Insert(myrescount[i] + 1 * i, Environment.NewLine);
-          //  }
+        {          
+                myASSSS = myASSSS.Remove(myrescount[i] + 1 * i, 1).Insert(myrescount[i] + 1 * i, Environment.NewLine);         
         }
         return Task.FromResult(myASSSS);
     }
