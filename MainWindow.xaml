@@ -6,8 +6,8 @@
         xmlns:local="clr-namespace:WPF_Traslate_Test"
         mc:Ignorable="d"
       
-        KeyDown="myTestKey"
-        MouseDoubleClick="eventsView_MouseDoubleClick"
+
+
         Title="MainWindow" Height="150" Width="200" WindowStartupLocation="CenterScreen" WindowState="Normal" WindowStyle="None" AllowsTransparency="True" Visibility="Visible">
     <Window.Background >
         <ImageBrush></ImageBrush>

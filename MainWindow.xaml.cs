@@ -35,17 +35,8 @@ namespace WPF_Traslate_Test
     /// </summary>
     public partial class MainWindow : Window
     {
-        public void Form1_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.LeftAlt && e.Key == Key.F)
-            {
-                Bot.Content = "true";
-            }
-        }
-        private void eventsView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            this.Close();
-        }
+
+
         public void myTestKey(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Space)
@@ -92,42 +83,12 @@ namespace WPF_Traslate_Test
 
 
         }
-        //[DllImport("gdi32.dll")]
-        //static extern int GetDeviceCaps(IntPtr hdc, int nIndex);
-        //public enum DeviceCap
-        //{
-        //    VERTRES = 10,
-        //    DESKTOPVERTRES = 117,
-
-        //    // http://pinvoke.net/default.aspx/gdi32/GetDeviceCaps.html
-        //}
-
-        //float dpiBase = 96;
-        //private float getScalingFactor()
-        //{
-        //    Graphics g = Graphics.FromHwnd(IntPtr.Zero);
-        //    IntPtr desktop = g.GetHdc();
-        //    int LogicalScreenHeight = GetDeviceCaps(desktop, (int)DeviceCap.VERTRES);
-        //    int PhysicalScreenHeight = GetDeviceCaps(desktop, (int)DeviceCap.DESKTOPVERTRES);
-
-        //    float ScreenScalingFactor = (float)PhysicalScreenHeight / (float)LogicalScreenHeight;
-
-        //    return ScreenScalingFactor; // 1.25 = 125%
-        //}
 
 
-        public static string MyStrCount()
-        {
-
-            
-
-
-            return "";
-        }
 
 
         private void Button_Click(object sender, RoutedEventArgs e)
-        {          
+        {
             BitmapSource imagebufer = BuferImage();
             if (imagebufer == null)
             {
@@ -140,28 +101,31 @@ namespace WPF_Traslate_Test
                 encoder.Save(fileStream);
 
             }
-            One.Width = 1920;
-            One.Height = 1440;
-            string scanimage = MyClassTranslateText.MyTrasletImage().Result;
-            if (scanimage == null)
+
+            string scantotext = MyClassTranslateText.MyTrasletImage().Result;
+            if (scantotext == null)
             {
                 return;
             }
-            MyClassTranslateText.Query = scanimage;
-            string resulttranslate = MyClassTranslateText.MyTranslate(scanimage).Result;
+            MyClassTranslateText.Query = scantotext;
+            string resulttranslate = MyClassTranslateText.MyTranslate(MyClassTranslateText.Query).Result;
             if (resulttranslate == null)
             {
                 return;
             }
-            string resulttranslate1 = MyClassTranslateText.MyReplaceforpng(resulttranslate).Result;
-            Bitmap a = new Bitmap(1920, 1440);
+            string resulttranslate1 = MyClassTranslateText.MyReplaceforpng(resulttranslate).Result.Item1;
+            int strcount = MyClassTranslateText.MyReplaceforpng(resulttranslate).Result.Item2;
+            Bitmap a = new Bitmap(1250, (strcount + 4) * 62);
+            One.Width = 1250;
+            One.Height = (strcount + 4) * 62;
             Graphics g = Graphics.FromImage(a);
-            g.DrawString(resulttranslate1, new Font("Arial", 30), new SolidBrush(System.Drawing.Color.Goldenrod), 0f,0f);         
+            g.Clear(System.Drawing.Color.FromArgb(30, 30, 30));
+            g.DrawString(resulttranslate1, new Font("Arial", 30), new SolidBrush(System.Drawing.Color.Goldenrod), 0f, 0f);
             g.Dispose();
             FileStream fileS = new FileStream(@"mytest\testo.PNG", FileMode.OpenOrCreate);
-            a.Save(fileS,System.Drawing.Imaging.ImageFormat.Png);
+            a.Save(fileS, System.Drawing.Imaging.ImageFormat.Png);
             a.Dispose();
-            fileS.Dispose();          
+            fileS.Dispose();
             Dispatcher.Invoke(new Action(MyFolow));
             Bot.Visibility = Visibility.Hidden;
             Background = new ImageBrush(new BitmapImage(new Uri(@"C:\Users\user\source\repos\WPF_Traslate_Test\bin\Debug\net5.0-windows\mytest\testo.PNG")));
@@ -262,46 +226,79 @@ public class MyClassTranslateText
     public static string Query = $"Client Packs — Module makers can now create Client Packs in the toolset, which can be placed in clients My Documents\u005Cpwc\u005C folder to allow users to connect to Multiplayer Games for which they do not have the module.These.pwc files contain only the dataabsolutely necessary to run the module on the client side are useful if, for instance, youare running a persistent world and do not wish to allow clients to open your module withall of its areas, creatures, and scripts visible.";
 
     private static string SearchQuery = "Hello World! I am not a programmer";
-    private static string urlbody = $"https://www.deepl.com/translator#en/ru/{SearchQuery}";
-    public static void myReplayser()
-    {
+    //private static string urlbody = $"https://www.deepl.com/translator#en/ru/{SearchQuery}";
+    //public static void myReplayser()
+    //{
 
-        Query = Query.Replace(@"\r\n","").Replace(" ", "%20").Replace("#", "%23");
+    //    Query = Query.Replace(@"\r\n","").Replace(" ", "%20").Replace("#", "%23");
 
-        SearchQuery = Query;
-        urlbody = $"https://www.deepl.com/translator#en/ru/{SearchQuery}";
+    //    SearchQuery = Query;
+    //    urlbody = $"https://www.deepl.com/translator#en/ru/{SearchQuery}";
 
-    }
-
+    //}
+    private static string urlbody = $"https://www.deepl.com/translator#en/ru/";
     public static Task<string> MyTranslate(string transbody)
-    {
-        Query = transbody;
-        myReplayser();
-
+    {//  ((IJavaScriptExecutor)driver).ExecuteScript("document.body.style.transform='scale(0.5)';");
+        
+      
 
         ChromeDriver driver = new ChromeDriver(@"C:\Текущие проэкты 2.0");
-        driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(30);
+        driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(15.00);
+        driver.Manage().Timeouts().PageLoad = TimeSpan.FromSeconds(10.00);
+        driver.Manage().Timeouts().AsynchronousJavaScript = TimeSpan.FromSeconds(15.00);
+        WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(30.00));
         driver.Navigate().GoToUrl("chrome://settings/");
         driver.ExecuteScript("chrome.settingsPrivate.setDefaultZoom(0.7);");
-        driver.Navigate().GoToUrl(urlbody);
+        
+        driver.Navigate().GoToUrl(urlbody); 
+
+        IWebElement restagrget = driver.FindElement(By.XPath("html/body"));
+
+        restagrget.SendKeys(transbody);
 
 
         IWebElement results = driver.FindElement(By.XPath("//*[@id='target-dummydiv']"));
-        Thread.Sleep(5000);
-      //  ((IJavaScriptExecutor)driver).ExecuteScript("document.body.style.transform='scale(0.5)';");
+
+
+
+        //IWebElement myrestranslate = wait.Until(SeleniumExtras.WaitHelpers.ExpectedConditions.ElementToBeClickable(By.XPath("//*[@class='results-text result']")));
+        IWebElement myrestranslate = wait.Until(x =>
+        {
+            int strlenght = transbody.Length;
+
+            for (;;)
+            {
+                
+                string aaa = results.GetAttribute("innerHTML");
+                double res = strlenght / aaa.Length;  //  248/24 = 10.333
+                double res2 = 100 / res;              // 100% / 10.333 = 9.677 %
+                if (res2>90)          
+                {
+                    break;
+                }
+                Thread.Sleep(30);
+
+            }
+
+            
+
+
+
+
+            return driver.FindElement(By.XPath("//*[@id='target-dummydiv']"));
+
+        });
+  
         string res;
         for (int i = 0; ; i++)
-        {
-            string aaa = results.GetAttribute("innerHTML");
-            Thread.Sleep(300);
-            //Console.WriteLine("test");
+        {   string aaa = results.GetAttribute("innerHTML");
+                       
             if (aaa != "" && aaa != "\r\n")
             {
                 res = aaa.Replace("\r", "").Replace("\n", "");
                 break;
             }
         }
-        Console.WriteLine(res);
         HtmlDocument doc = new HtmlDocument();
         doc.LoadHtml(results.GetAttribute("innerHTML"));
         string translate = doc.Text;
@@ -342,13 +339,10 @@ public class MyClassTranslateText
         downoad.Click();
        // Thread.Sleep(15000);
         IWebElement myrestranslate = wait.Until(SeleniumExtras.WaitHelpers.ExpectedConditions.ElementToBeClickable(By.XPath("//*[@class='results-text result']")));
-       // IWebElement myrestranslate = driver.FindElement(By.XPath("//*[@class='results-text result']"));
+
         HtmlDocument doc = new HtmlDocument();
         doc.LoadHtml(myrestranslate.GetAttribute("innerHTML"));
         string Mytransresult = doc.DocumentNode.FirstChild.EndNode.NextSibling.InnerHtml.Replace("", "");
-
-       // IWebElement element = wait.Until(SeleniumExtras.WaitHelpers.ExpectedConditions.ElementIsVisible(By.Id("content-section")));
-        //IWebElement element2 = wait.Until(SeleniumExtras.WaitHelpers.ExpectedConditions.ElementToBeClickable(By.XPath("//*[@class='results-text result']")));
 
 
 
@@ -360,7 +354,7 @@ public class MyClassTranslateText
 
 
     }
-    public static Task<string> MyReplaceforpng(string rep)
+    public static Task<Tuple<string,int>> MyReplaceforpng(string rep)
     {
         List<int> vs = new List<int>();
         for (int i = 0; ; i++)
@@ -408,6 +402,6 @@ public class MyClassTranslateText
         {          
                 myASSSS = myASSSS.Remove(myrescount[i] + 1 * i, 1).Insert(myrescount[i] + 1 * i, Environment.NewLine);         
         }
-        return Task.FromResult(myASSSS);
+        return Task.FromResult(Tuple.Create(myASSSS, myrescount.Count));
     }
 }
