@@ -4,23 +4,30 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WPF_Traslate_Test"
-        mc:Ignorable="d"
-      
+        mc:Ignorable="d" Height="150" Width="200" WindowStartupLocation="CenterScreen" WindowState="Normal" WindowStyle="None" AllowsTransparency="True" Visibility="Visible" MouseDoubleClick="MyDoubleFormClick">
+       
 
 
-        Title="MainWindow" Height="150" Width="200" WindowStartupLocation="CenterScreen" WindowState="Normal" WindowStyle="None" AllowsTransparency="True" Visibility="Visible">
+    <Window.OpacityMask>
+        <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+            <GradientStop Color="Black"/>
+            <GradientStop Color="White" Offset="1"/>
+        </LinearGradientBrush>
+        
+    </Window.OpacityMask>
     <Window.Background >
         <ImageBrush></ImageBrush>
+        
     </Window.Background>
 
-    
-        
-        <Grid VerticalAlignment="Bottom" HorizontalAlignment="Right" Height="50" Width="170">
-            <Grid.Background>
-                <ImageBrush/>
-            </Grid.Background>
-            <Button x:Name="Bot" Content="Button" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Click="Button_Click"/>
-        </Grid>
+
+
+    <Grid VerticalAlignment="Bottom" HorizontalAlignment="Right" Height="50" Width="170">
+        <Grid.Background>
+            <ImageBrush/>
+        </Grid.Background>
+        <Button x:Name="Bot" Content="Button" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Click="Button_Click"/>
+    </Grid>
 
 
 
@@ -29,8 +36,8 @@
 
 
 
-    
-    
-    
+
+
+
 </Window>
     

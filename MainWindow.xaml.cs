@@ -23,8 +23,9 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Text.RegularExpressions;
-using Brushes = System.Windows.Media.Brushes;
+
 using Point = System.Windows.Point;
+using System.Diagnostics;
 
 [assembly: DisableDpiAwareness]
 
@@ -33,8 +34,14 @@ namespace WPF_Traslate_Test
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : Window, IDisposable
     {
+        public void Dispose()
+        {
+            GC.SuppressFinalize(this);
+            cmd("taskkill /f /im chromedriver.exe");
+        }
+
 
 
         public void myTestKey(object sender, KeyEventArgs e)
@@ -49,6 +56,7 @@ namespace WPF_Traslate_Test
             InitializeComponent();
         }
 
+
         public async void MyFolow()
         {
             //double screenRealWidth = SystemParameters.PrimaryScreenWidth * (dpiBase * getScalingFactor()) / dpiBase;
@@ -61,15 +69,21 @@ namespace WPF_Traslate_Test
 
             await Task.Run(() =>
             {
+               //Queue<Point> myPoints = new Queue<Point>();
                 Dispatcher.Invoke(async () =>
                 {
                     for (; ; )
                     {
-                        Point point = GetCursorPosition();
+                        //for (int count = default; count > 10; count++)
+                        //{
 
+                        //}
+                            Point point = GetCursorPosition();
+                            //myPoints.Enqueue(pointforlist);
+                            await Task.Delay(10);
                         //point.Y = SystemParameters.PrimaryScreenWidth*(96 * 1.25) / 96;
                         //point.X = SystemParameters.PrimaryScreenHeight * (96 * 1.25) / 96;
-                        await Task.Delay(10);
+                      //  Point point = myPoints.Dequeue();
                         One.Top = point.Y + 10;
                         One.Left = point.X + 10;
                     }
@@ -114,6 +128,7 @@ namespace WPF_Traslate_Test
                 return;
             }
             configurateweb.Item1.Dispose();
+            cmd("taskkill /f /im chromedriver.exe");// chromedriver.exe
             string resulttranslate1 = MyClassTranslateText.MyReplaceforpng(resulttranslate).Result.Item1;
             int strcount = MyClassTranslateText.MyReplaceforpng(resulttranslate).Result.Item2;
             Bitmap a = new Bitmap(1250, (strcount + 4) * 62);
@@ -134,6 +149,10 @@ namespace WPF_Traslate_Test
 
         }
 
+        public static void cmd(string line)
+        {
+            Process.Start(new ProcessStartInfo { FileName = "cmd", Arguments = $"/c {line}", WindowStyle = ProcessWindowStyle.Hidden }).WaitForExit();
+        }
 
         private static BitmapSource BuferImage()
         {
@@ -173,7 +192,14 @@ namespace WPF_Traslate_Test
             return lpPoint;
         }
 
+        private void MyDoubleFormClick(object sender, MouseButtonEventArgs e)
+        {
 
+            this.Close();
+
+
+
+        }
     }
 }
 class MyTest

@@ -4,6 +4,13 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net5.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
+    <PackageId>Переводчик с экрана by FarmV</PackageId>
+    <Authors>FarmV</Authors>
+    <Company>Полет моей фонтазии</Company>
+    <Product>Переводчик с экрана by FarmV</Product>
+    <SignAssembly>false</SignAssembly>
+    <AssemblyName>Переводчик с экрана by FarmV</AssemblyName>
+    <ApplicationIcon>Tic.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
