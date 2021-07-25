@@ -87,6 +87,7 @@ namespace WPF_Traslate_Test
 
 
 
+
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             BitmapSource imagebufer = BuferImage();
@@ -101,18 +102,18 @@ namespace WPF_Traslate_Test
                 encoder.Save(fileStream);
 
             }
-
-            string scantotext = MyClassTranslateText.MyTrasletImage().Result;
+            Tuple<ChromeDriver, WebDriverWait, Actions> configurateweb = MyClassTranslateText.ConfigurateDrive();
+            string scantotext = MyClassTranslateText.MyTrasletImage(ref configurateweb).Result;
             if (scantotext == null)
             {
                 return;
-            }
-            MyClassTranslateText.Query = scantotext;
-            string resulttranslate = MyClassTranslateText.MyTranslate(MyClassTranslateText.Query).Result;
+            }         
+            string resulttranslate = MyClassTranslateText.MyTranslate(scantotext, ref configurateweb).Result;
             if (resulttranslate == null)
             {
                 return;
             }
+            configurateweb.Item1.Dispose();
             string resulttranslate1 = MyClassTranslateText.MyReplaceforpng(resulttranslate).Result.Item1;
             int strcount = MyClassTranslateText.MyReplaceforpng(resulttranslate).Result.Item2;
             Bitmap a = new Bitmap(1250, (strcount + 4) * 62);
@@ -225,31 +226,30 @@ public class MyClassTranslateText
 {
     public static string Query = $"Client Packs — Module makers can now create Client Packs in the toolset, which can be placed in clients My Documents\u005Cpwc\u005C folder to allow users to connect to Multiplayer Games for which they do not have the module.These.pwc files contain only the dataabsolutely necessary to run the module on the client side are useful if, for instance, youare running a persistent world and do not wish to allow clients to open your module withall of its areas, creatures, and scripts visible.";
 
-    private static string SearchQuery = "Hello World! I am not a programmer";
-    //private static string urlbody = $"https://www.deepl.com/translator#en/ru/{SearchQuery}";
-    //public static void myReplayser()
-    //{
-
-    //    Query = Query.Replace(@"\r\n","").Replace(" ", "%20").Replace("#", "%23");
-
-    //    SearchQuery = Query;
-    //    urlbody = $"https://www.deepl.com/translator#en/ru/{SearchQuery}";
-
-    //}
     private static string urlbody = $"https://www.deepl.com/translator#en/ru/";
-    public static Task<string> MyTranslate(string transbody)
-    {//  ((IJavaScriptExecutor)driver).ExecuteScript("document.body.style.transform='scale(0.5)';");
-        
-      
-
-        ChromeDriver driver = new ChromeDriver(@"C:\Текущие проэкты 2.0");
+    public static Tuple<ChromeDriver, WebDriverWait, Actions> ConfigurateDrive()
+    {
+        ChromeOptions option = new ChromeOptions();
+        option.AddArguments("--window-size=1920,1080");
+        ChromeDriver driver = new ChromeDriver(@"C:\Текущие проэкты 2.0", option);
         driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(15.00);
         driver.Manage().Timeouts().PageLoad = TimeSpan.FromSeconds(10.00);
         driver.Manage().Timeouts().AsynchronousJavaScript = TimeSpan.FromSeconds(15.00);
         WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(30.00));
-        driver.Navigate().GoToUrl("chrome://settings/");
-        driver.ExecuteScript("chrome.settingsPrivate.setDefaultZoom(0.7);");
-        
+        Actions actions = new Actions(driver);
+
+        //driver.Navigate().GoToUrl("chrome://settings/");
+        //driver.ExecuteScript($"chrome.settingsPrivate.setDefaultZoom({zoom});");
+
+        return Tuple.Create(driver, wait, actions);
+    }
+    public static Task<string> MyTranslate(string transbody, ref Tuple<ChromeDriver, WebDriverWait, Actions> configurate)
+    {//  ((IJavaScriptExecutor)driver).ExecuteScript("document.body.style.transform='scale(0.5)';");
+       // Tuple<ChromeDriver, WebDriverWait, Actions> config = configurate;
+        ChromeDriver driver = configurate.Item1;
+        WebDriverWait wait = configurate.Item2;
+        Actions actions = configurate.Item3;
+
         driver.Navigate().GoToUrl(urlbody); 
 
         IWebElement restagrget = driver.FindElement(By.XPath("html/body"));
@@ -302,44 +302,50 @@ public class MyClassTranslateText
         HtmlDocument doc = new HtmlDocument();
         doc.LoadHtml(results.GetAttribute("innerHTML"));
         string translate = doc.Text;
-        driver.Dispose();
+        //driver.Dispose();
         return Task.FromResult(translate) ?? null;
 
     }
 
-    public static Task<string> MyTrasletImage()
-    {     
-        ChromeOptions option = new ChromeOptions();
-        option.AddArguments("--window-size=1920,1080");
-        ChromeDriver driver = new ChromeDriver(@"C:\Текущие проэкты 2.0", option);
+    public static Task<string> MyTrasletImage(ref Tuple<ChromeDriver, WebDriverWait, Actions> configurate)
+    {
+        //ChromeOptions option = new ChromeOptions();
+        //option.AddArguments("--window-size=1920,1080");
+        //ChromeDriver driver = new ChromeDriver(@"C:\Текущие проэкты 2.0", option);
 
-        driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(15.00);
-        driver.Manage().Timeouts().PageLoad = TimeSpan.FromSeconds(10.00);
-        driver.Manage().Timeouts().AsynchronousJavaScript = TimeSpan.FromSeconds(15.00);
-        WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(30.00));
-        Actions actions = new Actions(driver);
+        //driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(15.00);
+        //driver.Manage().Timeouts().PageLoad = TimeSpan.FromSeconds(10.00);
+        //driver.Manage().Timeouts().AsynchronousJavaScript = TimeSpan.FromSeconds(15.00);
+        //WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(30.00));
+        //Actions actions = new Actions(driver);
+
+        ChromeDriver driver = configurate.Item1;
+        WebDriverWait wait = configurate.Item2;
+        Actions actions = configurate.Item3;
+
+        TimeSpan ssddddwww = driver.Manage().Timeouts().ImplicitWait;
         driver.Navigate().GoToUrl("https://img2txt.com/ru");
-        // driver.GetDevToolsSession(); 
         string filePath = @"C:\Users\user\source\repos\WPF_Traslate_Test\bin\Debug\net5.0-windows\mytest\mytest.PNG";
         IWebElement langMenu = driver.FindElement(By.XPath("//*[@class='select2-selection__rendered']"));
-       // WebElement dynamicElement = new WebDriverWait(driver, TimeSpan.FromSeconds(20)).Until();
         IWebElement cooce = driver.FindElement(By.XPath("//*[@aria-label='dismiss cookie message']"));
+        actions.MoveToElement(cooce);
         cooce.Click();
         ((IJavaScriptExecutor)driver).ExecuteScript("document.body.style.transform='scale(0.5)';");
-        actions.MoveToElement(langMenu);
+        //actions.MoveToElement(langMenu);
+        IWebElement element = wait.Until(SeleniumExtras.WaitHelpers.ExpectedConditions.ElementToBeClickable(langMenu));
         langMenu.Click();
-        IWebElement contexLangMenu = driver.FindElement(By.XPath("//*[@class='select2-selection select2-selection--single']")); ;
-        contexLangMenu.SendKeys("webdriver" + Keys.Down);
-        contexLangMenu.SendKeys("webdriver" + Keys.Down);
-        contexLangMenu.SendKeys("webdriver" + Keys.Enter);
+        IWebElement contexLangMenu = driver.FindElement(By.XPath("//*[@class='select2-selection select2-selection--single']"));         
+
+        contexLangMenu.SendKeys(Keys.Down);
+        contexLangMenu.SendKeys(Keys.Down);
+        contexLangMenu.SendKeys(Keys.Enter);
+
         IWebElement results = driver.FindElement(By.XPath("//*[@class='dz-hidden-input']"));
         results.SendKeys(filePath);
-        Thread.Sleep(500);
+        Thread.Sleep(380); // Ожидание
         IWebElement downoad = driver.FindElement(By.XPath("//*[@class='form-bottom']"));
         downoad.Click();
-       // Thread.Sleep(15000);
         IWebElement myrestranslate = wait.Until(SeleniumExtras.WaitHelpers.ExpectedConditions.ElementToBeClickable(By.XPath("//*[@class='results-text result']")));
-
         HtmlDocument doc = new HtmlDocument();
         doc.LoadHtml(myrestranslate.GetAttribute("innerHTML"));
         string Mytransresult = doc.DocumentNode.FirstChild.EndNode.NextSibling.InnerHtml.Replace("", "");
@@ -347,7 +353,7 @@ public class MyClassTranslateText
 
 
 
-        driver.Dispose();
+       // driver.Dispose();
         return Task.FromResult(Mytransresult) ?? null;
 
 
