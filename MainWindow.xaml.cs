@@ -57,6 +57,8 @@ namespace WPF_Traslate_Test
         }
 
 
+        private static volatile Queue<Point> myPoints = new Queue<Point>();
+        private static volatile bool startfor = true;
         public async void MyFolow()
         {
             //double screenRealWidth = SystemParameters.PrimaryScreenWidth * (dpiBase * getScalingFactor()) / dpiBase;
@@ -69,23 +71,67 @@ namespace WPF_Traslate_Test
 
             await Task.Run(() =>
             {
-               //Queue<Point> myPoints = new Queue<Point>();
                 Dispatcher.Invoke(async () =>
                 {
                     for (; ; )
                     {
-                        //for (int count = default; count > 10; count++)
-                        //{
 
-                        //}
+                        //  248/24 = 10.333
+                        // 100% / 10.333 = 9.677 %
+                        if (startfor)
+                        {
+                            Point startpoint = GetCursorPosition();
+                            myPoints.Enqueue(startpoint);
+                            startfor = false;
+                        }
+                                                           //                 50          40        1.25          80  100-80    20
+                                                          //                 100          120      -20               120 /10      /20                          
+                        else
+                        {
+                            //Point startpoint = GetCursorPosition();
+                            //myPoints.Enqueue(startpoint);
+                            Point oldpoint = myPoints.Dequeue();      // 999   1231                                                                   // 458   67
                             Point point = GetCursorPosition();
-                            //myPoints.Enqueue(pointforlist);
                             await Task.Delay(10);
-                        //point.Y = SystemParameters.PrimaryScreenWidth*(96 * 1.25) / 96;
-                        //point.X = SystemParameters.PrimaryScreenHeight * (96 * 1.25) / 96;
-                      //  Point point = myPoints.Dequeue();
-                        One.Top = point.Y + 10;
-                        One.Left = point.X + 10;
+                            double res1 = oldpoint.X;
+                            double res2 = oldpoint.Y;
+                            double res3 = point.X;
+                            double res4 = point.Y;
+                            double totalresX = 100.00 / (res1 / res3); //3000
+
+                            double a1 = (oldpoint.X - point.X) / 10;                //192
+                            double a2 = (oldpoint.Y - point.Y) / 10;                // 108
+
+                            // 10
+                            var timedelay = 15.625 * a1;
+                            if (timedelay==0)
+                            {
+                                timedelay = 10;
+                            }
+                            var timedelay2 = 27.77 * a2;
+                            if (timedelay2 == 0)
+                            {
+                                timedelay2 = 10;
+                            }
+                            if (timedelay<0)
+                            {
+                                timedelay = timedelay * -1;
+                            }
+                            if (timedelay2 < 0)
+                            {
+                                timedelay2 = timedelay2 * -1;
+                            }
+                            var totaltimedealy = (timedelay + timedelay2) / 2;
+                            await Task.Delay((int)totaltimedealy);
+                            One.Left = point.X + 10;
+                           // await Task.Delay((int)timedelay2);
+                            One.Top = point.Y + 10;
+                            myPoints.Enqueue(point);
+                            //point.Y = SystemParameters.PrimaryScreenWidth*(96 * 1.25) / 96;
+                            //point.X = SystemParameters.PrimaryScreenHeight * (96 * 1.25) / 96;
+                            //  Point point = myPoints.Dequeue();
+
+                        }
                     }
 
 
@@ -104,44 +150,44 @@ namespace WPF_Traslate_Test
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            BitmapSource imagebufer = BuferImage();
-            if (imagebufer == null)
-            {
-                return;
-            }
-            using (FileStream fileStream = new FileStream(@"mytest\mytest.PNG", FileMode.OpenOrCreate))
-            {
-                BitmapEncoder encoder = new PngBitmapEncoder();
-                encoder.Frames.Add(BitmapFrame.Create(imagebufer));
-                encoder.Save(fileStream);
+            //BitmapSource imagebufer = BuferImage();
+            //if (imagebufer == null)
+            //{
+            //    return;
+            //}
+            //using (FileStream fileStream = new FileStream(@"mytest\mytest.PNG", FileMode.OpenOrCreate))
+            //{
+            //    BitmapEncoder encoder = new PngBitmapEncoder();
+            //    encoder.Frames.Add(BitmapFrame.Create(imagebufer));
+            //    encoder.Save(fileStream);
 
-            }
-            Tuple<ChromeDriver, WebDriverWait, Actions> configurateweb = MyClassTranslateText.ConfigurateDrive();
-            string scantotext = MyClassTranslateText.MyTrasletImage(ref configurateweb).Result;
-            if (scantotext == null)
-            {
-                return;
-            }         
-            string resulttranslate = MyClassTranslateText.MyTranslate(scantotext, ref configurateweb).Result;
-            if (resulttranslate == null)
-            {
-                return;
-            }
-            configurateweb.Item1.Dispose();
-            cmd("taskkill /f /im chromedriver.exe");// chromedriver.exe
-            string resulttranslate1 = MyClassTranslateText.MyReplaceforpng(resulttranslate).Result.Item1;
-            int strcount = MyClassTranslateText.MyReplaceforpng(resulttranslate).Result.Item2;
-            Bitmap a = new Bitmap(1250, (strcount + 4) * 62);
-            One.Width = 1250;
-            One.Height = (strcount + 4) * 62;
-            Graphics g = Graphics.FromImage(a);
-            g.Clear(System.Drawing.Color.FromArgb(30, 30, 30));
-            g.DrawString(resulttranslate1, new Font("Arial", 30), new SolidBrush(System.Drawing.Color.Goldenrod), 0f, 0f);
-            g.Dispose();
-            FileStream fileS = new FileStream(@"mytest\testo.PNG", FileMode.OpenOrCreate);
-            a.Save(fileS, System.Drawing.Imaging.ImageFormat.Png);
-            a.Dispose();
-            fileS.Dispose();
+            //}
+            //Tuple<ChromeDriver, WebDriverWait, Actions> configurateweb = MyClassTranslateText.ConfigurateDrive();
+            //string scantotext = MyClassTranslateText.MyTrasletImage(ref configurateweb).Result;
+            //if (scantotext == null)
+            //{
+            //    return;
+            //}         
+            //string resulttranslate = MyClassTranslateText.MyTranslate(scantotext, ref configurateweb).Result;
+            //if (resulttranslate == null)
+            //{
+            //    return;
+            //}
+            //configurateweb.Item1.Dispose();
+            //cmd("taskkill /f /im chromedriver.exe");// chromedriver.exe
+            //string resulttranslate1 = MyClassTranslateText.MyReplaceforpng(resulttranslate).Result.Item1;
+            //int strcount = MyClassTranslateText.MyReplaceforpng(resulttranslate).Result.Item2;
+            //Bitmap a = new Bitmap(1250, (strcount + 4) * 62);
+            //One.Width = 1250;
+            //One.Height = (strcount + 4) * 62;
+            //Graphics g = Graphics.FromImage(a);
+            //g.Clear(System.Drawing.Color.FromArgb(30, 30, 30));
+            //g.DrawString(resulttranslate1, new Font("Arial", 30), new SolidBrush(System.Drawing.Color.Goldenrod), 0f, 0f);
+            //g.Dispose();
+            //FileStream fileS = new FileStream(@"mytest\testo.PNG", FileMode.OpenOrCreate);
+            //a.Save(fileS, System.Drawing.Imaging.ImageFormat.Png);
+            //a.Dispose();
+            //fileS.Dispose();
             Dispatcher.Invoke(new Action(MyFolow));
             Bot.Visibility = Visibility.Hidden;
             Background = new ImageBrush(new BitmapImage(new Uri(@"C:\Users\user\source\repos\WPF_Traslate_Test\bin\Debug\net5.0-windows\mytest\testo.PNG")));
@@ -180,7 +226,7 @@ namespace WPF_Traslate_Test
         /// </summary>
         /// <see>See MSDN documentation for further information.</see>
         [DllImport("user32.dll")]
-        public static extern bool GetCursorPos(out POINT lpPoint);
+        private static extern bool GetCursorPos(out POINT lpPoint);
 
         public static Point GetCursorPosition()
         {
@@ -368,7 +414,7 @@ public class MyClassTranslateText
 
         IWebElement results = driver.FindElement(By.XPath("//*[@class='dz-hidden-input']"));
         results.SendKeys(filePath);
-        Thread.Sleep(380); // Ожидание
+        Thread.Sleep(440); // Ожидание
         IWebElement downoad = driver.FindElement(By.XPath("//*[@class='form-bottom']"));
         downoad.Click();
         IWebElement myrestranslate = wait.Until(SeleniumExtras.WaitHelpers.ExpectedConditions.ElementToBeClickable(By.XPath("//*[@class='results-text result']")));
