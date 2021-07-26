@@ -150,44 +150,44 @@ namespace WPF_Traslate_Test
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            //BitmapSource imagebufer = BuferImage();
-            //if (imagebufer == null)
-            //{
-            //    return;
-            //}
-            //using (FileStream fileStream = new FileStream(@"mytest\mytest.PNG", FileMode.OpenOrCreate))
-            //{
-            //    BitmapEncoder encoder = new PngBitmapEncoder();
-            //    encoder.Frames.Add(BitmapFrame.Create(imagebufer));
-            //    encoder.Save(fileStream);
+            BitmapSource imagebufer = BuferImage();
+            if (imagebufer == null)
+            {
+                return;
+            }
+            using (FileStream fileStream = new FileStream(@"mytest\mytest.PNG", FileMode.OpenOrCreate))
+            {
+                BitmapEncoder encoder = new PngBitmapEncoder();
+                encoder.Frames.Add(BitmapFrame.Create(imagebufer));
+                encoder.Save(fileStream);
 
-            //}
-            //Tuple<ChromeDriver, WebDriverWait, Actions> configurateweb = MyClassTranslateText.ConfigurateDrive();
-            //string scantotext = MyClassTranslateText.MyTrasletImage(ref configurateweb).Result;
-            //if (scantotext == null)
-            //{
-            //    return;
-            //}         
-            //string resulttranslate = MyClassTranslateText.MyTranslate(scantotext, ref configurateweb).Result;
-            //if (resulttranslate == null)
-            //{
-            //    return;
-            //}
-            //configurateweb.Item1.Dispose();
-            //cmd("taskkill /f /im chromedriver.exe");// chromedriver.exe
-            //string resulttranslate1 = MyClassTranslateText.MyReplaceforpng(resulttranslate).Result.Item1;
-            //int strcount = MyClassTranslateText.MyReplaceforpng(resulttranslate).Result.Item2;
-            //Bitmap a = new Bitmap(1250, (strcount + 4) * 62);
-            //One.Width = 1250;
-            //One.Height = (strcount + 4) * 62;
-            //Graphics g = Graphics.FromImage(a);
-            //g.Clear(System.Drawing.Color.FromArgb(30, 30, 30));
-            //g.DrawString(resulttranslate1, new Font("Arial", 30), new SolidBrush(System.Drawing.Color.Goldenrod), 0f, 0f);
-            //g.Dispose();
-            //FileStream fileS = new FileStream(@"mytest\testo.PNG", FileMode.OpenOrCreate);
-            //a.Save(fileS, System.Drawing.Imaging.ImageFormat.Png);
-            //a.Dispose();
-            //fileS.Dispose();
+            }
+            Tuple<ChromeDriver, WebDriverWait, Actions> configurateweb = MyClassTranslateText.ConfigurateDrive();
+            string scantotext = MyClassTranslateText.MyTrasletImage(ref configurateweb).Result;
+            if (scantotext == null)
+            {
+                return;
+            }
+            string resulttranslate = MyClassTranslateText.MyTranslate(scantotext, ref configurateweb).Result;
+            if (resulttranslate == null)
+            {
+                return;
+            }
+            configurateweb.Item1.Dispose();
+            cmd("taskkill /f /im chromedriver.exe");// chromedriver.exe
+            string resulttranslate1 = MyClassTranslateText.MyReplaceforpng(resulttranslate).Result.Item1;
+            int strcount = MyClassTranslateText.MyReplaceforpng(resulttranslate).Result.Item2;
+            Bitmap a = new Bitmap(1250, (strcount + 4) * 62);
+            One.Width = 1250;
+            One.Height = (strcount + 4) * 62;
+            Graphics g = Graphics.FromImage(a);
+            g.Clear(System.Drawing.Color.FromArgb(30, 30, 30));
+            g.DrawString(resulttranslate1, new Font("Arial", 30), new SolidBrush(System.Drawing.Color.Goldenrod), 0f, 0f);
+            g.Dispose();
+            FileStream fileS = new FileStream(@"mytest\testo.PNG", FileMode.OpenOrCreate);
+            a.Save(fileS, System.Drawing.Imaging.ImageFormat.Png);
+            a.Dispose();
+            fileS.Dispose();
             Dispatcher.Invoke(new Action(MyFolow));
             Bot.Visibility = Visibility.Hidden;
             Background = new ImageBrush(new BitmapImage(new Uri(@"C:\Users\user\source\repos\WPF_Traslate_Test\bin\Debug\net5.0-windows\mytest\testo.PNG")));
