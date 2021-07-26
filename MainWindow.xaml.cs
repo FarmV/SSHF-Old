@@ -23,9 +23,13 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Text.RegularExpressions;
+using WebDriverManager;
+using WebDriverManager.DriverConfigs.Impl;
+
 
 using Point = System.Windows.Point;
 using System.Diagnostics;
+using WebDriverManager.Helpers;
 
 [assembly: DisableDpiAwareness]
 
@@ -175,8 +179,9 @@ namespace WPF_Traslate_Test
             }
             configurateweb.Item1.Dispose();
             cmd("taskkill /f /im chromedriver.exe");// chromedriver.exe
-            string resulttranslate1 = MyClassTranslateText.MyReplaceforpng(resulttranslate).Result.Item1;
-            int strcount = MyClassTranslateText.MyReplaceforpng(resulttranslate).Result.Item2;
+            Tuple<string, int> sdsdt = MyClassTranslateText.MyReplaceforpng(resulttranslate).Result;
+            string resulttranslate1 = sdsdt.Item1;
+            int strcount = sdsdt.Item2;
             Bitmap a = new Bitmap(1250, (strcount + 4) * 62);
             One.Width = 1250;
             One.Height = (strcount + 4) * 62;
@@ -299,11 +304,44 @@ public class MyClassTranslateText
     public static string Query = $"Client Packs — Module makers can now create Client Packs in the toolset, which can be placed in clients My Documents\u005Cpwc\u005C folder to allow users to connect to Multiplayer Games for which they do not have the module.These.pwc files contain only the dataabsolutely necessary to run the module on the client side are useful if, for instance, youare running a persistent world and do not wish to allow clients to open your module withall of its areas, creatures, and scripts visible.";
 
     private static string urlbody = $"https://www.deepl.com/translator#en/ru/";
-    public static Tuple<ChromeDriver, WebDriverWait, Actions> ConfigurateDrive()
+
+
+
+
+    public class Test
     {
+        //public class Tests
+        //{
+        //    public IWebDriver _webDriver;
+
+        //    public void SetUp()
+        //    {
+        //        new DriverManager().SetUpDriver(new ChromeConfig());
+        //        _webDriver = new ChromeDriver();
+        //    }
+
+        //    public void TearDown()
+        //    {
+        //        _webDriver.Quit();
+        //    }
+
+
+        //    public void Test()
+        //    {
+        //        _webDriver.Navigate().GoToUrl("https://www.google.com");
+        //        Assert.True(_webDriver.Title.Contains("Google"));
+        //    }
+        //}
+    }
+    public static Tuple<ChromeDriver, WebDriverWait, Actions> ConfigurateDrive()    {
+
+
+       // ChromeDriverService chromeDriverService = ChromeDriverService.CreateDefaultService();//скрывает батник
+       // chromeDriverService.HideCommandPromptWindow = true;//
         ChromeOptions option = new ChromeOptions();
         option.AddArguments("--window-size=1920,1080");
-        ChromeDriver driver = new ChromeDriver(@"C:\Текущие проэкты 2.0", option);
+        option.AddArgument("--headless");  //скрывает окно
+        ChromeDriver driver = new ChromeDriver(new DriverManager().SetUpDriver(new ChromeConfig(),VersionResolveStrategy.MatchingBrowser).Replace("\\chromedriver.exe", ""), option);
         driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(15.00);
         driver.Manage().Timeouts().PageLoad = TimeSpan.FromSeconds(10.00);
         driver.Manage().Timeouts().AsynchronousJavaScript = TimeSpan.FromSeconds(15.00);
