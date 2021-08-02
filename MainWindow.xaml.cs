@@ -26,10 +26,10 @@ using System.Text.RegularExpressions;
 using WebDriverManager;
 using WebDriverManager.DriverConfigs.Impl;
 
-
 using Point = System.Windows.Point;
 using System.Diagnostics;
 using WebDriverManager.Helpers;
+using Path = System.IO.Path;
 
 [assembly: DisableDpiAwareness]
 
@@ -44,6 +44,7 @@ namespace WPF_Traslate_Test
         {
             GC.SuppressFinalize(this);
             cmd("taskkill /f /im chromedriver.exe");
+            _notifyIcon.Dispose();
         }
 
 
@@ -52,19 +53,30 @@ namespace WPF_Traslate_Test
         {
             if (e.Key == Key.Space)
             {
-                Bot.Content = "true";
+                ButtonTanslate.Content = "true";
             }
         }
         public MainWindow()
         {
             InitializeComponent();
+            SetIconToMainApplication();
         }
+        //private System.Windows.Forms.NotifyIcon _notifyIcon;
 
+        public static void Method_Name()
+        {
+            
+        }
 
         private static volatile Queue<Point> myPoints = new Queue<Point>();
         private static volatile bool startfor = true;
-        public async void MyFolow()
+        //  public static CancellationTokenSource cts = new CancellationTokenSource();
+        //  CancellationToken ct = cts.Token;
+        public static volatile bool MyEnetrForm;
+        
+        public async void RefreshWindow()
         {
+            
             //double screenRealWidth = SystemParameters.PrimaryScreenWidth * (dpiBase * getScalingFactor()) / dpiBase;
             //double screenRealHeight = SystemParameters.PrimaryScreenHeight * (dpiBase * getScalingFactor()) / dpiBase;
 
@@ -72,14 +84,20 @@ namespace WPF_Traslate_Test
             //PresentationSource.FromVisual(Application.Current.MainWindow).CompositionTarget.TransformToDevice;
             //double dx = m.M11;
             //double dy = m.M22;
+;
 
             await Task.Run(() =>
             {
+               
                 Dispatcher.Invoke(async () =>
                 {
                     for (; ; )
                     {
-
+                        if (MyEnetrForm)
+                        {
+                            break;
+                        }
+                        
                         //  248/24 = 10.333
                         // 100% / 10.333 = 9.677 %
                         if (startfor)
@@ -88,8 +106,8 @@ namespace WPF_Traslate_Test
                             myPoints.Enqueue(startpoint);
                             startfor = false;
                         }
-                                                           //                 50          40        1.25          80  100-80    20
-                                                          //                 100          120      -20               120 /10      /20                          
+                        //                 50          40        1.25          80  100-80    20
+                        //                 100          120      -20               120 /10      /20                          
                         else
                         {
                             //Point startpoint = GetCursorPosition();
@@ -107,17 +125,17 @@ namespace WPF_Traslate_Test
                             double a2 = (oldpoint.Y - point.Y) / 10;                // 108
 
                             // 10
-                            var timedelay = 15.625 * a1;
-                            if (timedelay==0)
+                            var timedelay = 2 * a1;
+                            if (timedelay == 0)
                             {
-                                timedelay = 10;
+                                timedelay = 170;
                             }
-                            var timedelay2 = 27.77 * a2;
+                            var timedelay2 = 0.6 * a2;
                             if (timedelay2 == 0)
                             {
-                                timedelay2 = 10;
+                                timedelay2 = 170;
                             }
-                            if (timedelay<0)
+                            if (timedelay < 0)
                             {
                                 timedelay = timedelay * -1;
                             }
@@ -127,9 +145,9 @@ namespace WPF_Traslate_Test
                             }
                             var totaltimedealy = (timedelay + timedelay2) / 2;
                             await Task.Delay((int)totaltimedealy);
-                            One.Left = point.X + 10;
-                           // await Task.Delay((int)timedelay2);
-                            One.Top = point.Y + 10;
+                            One.Left = point.X + 17;
+                            // await Task.Delay((int)timedelay2);
+                            One.Top = point.Y + 17;
                             myPoints.Enqueue(point);
                             //point.Y = SystemParameters.PrimaryScreenWidth*(96 * 1.25) / 96;
                             //point.X = SystemParameters.PrimaryScreenHeight * (96 * 1.25) / 96;
@@ -144,60 +162,95 @@ namespace WPF_Traslate_Test
             });
 
 
-
+           
 
         }
 
+        private static readonly string PathOriginalScreenshot = @"mytest\origianal.PNG";
+        private static readonly string PathModifiedScreenshot = @"mytest\forbackgrund.PNG";
+        public bool myHideWindow;
+        private Task GetTranslate()
+        {
+            BitmapSource imageFromBuffer = GetBuferImage();
+            if (imageFromBuffer == null) throw new ArgumentNullException("Буфер пустой", new Exception("imageFromBuffer"));
+
+
+            using (FileStream createFileFromImageBuffer = new FileStream(PathOriginalScreenshot, FileMode.OpenOrCreate))
+            {
+                BitmapEncoder encoder = new PngBitmapEncoder();
+                encoder.Frames.Add(BitmapFrame.Create(imageFromBuffer));
+                encoder.Save(createFileFromImageBuffer);
+
+            }
+           
+            
+            Tuple<ChromeDriver, WebDriverWait, Actions> configurateWebDriver = MyClassTranslateText.ConfigurateWebDrive(myHideWindow);
+                                 
+            
+
+            string scanTextImage = MyClassTranslateText.ScanImageToText(ref configurateWebDriver).Result;
+            if (scanTextImage == null) throw new ArgumentNullException("Ошибка Скан", new Exception("scanTextImage"));
+
+            string resultTranslate = MyClassTranslateText.Translate(scanTextImage, ref configurateWebDriver).Result;
+            if (resultTranslate == null) throw new ArgumentNullException("Ошибка Перевод", new Exception("resultTranslate")); ;
+
+            configurateWebDriver.Item1.Dispose();
+            cmd("taskkill /f /im chromedriver.exe");// chromedriver.exe
+
+            Tuple<string, int> changed = MyClassTranslateText.ReplaceTextForImage(resultTranslate).Result;
+            string changedTextforImageConstructor = changed.Item1;
+            int stingrCountForImageConstructor = changed.Item2;
+
+            Bitmap imageForBackground = new Bitmap(1400, (stingrCountForImageConstructor + 4) * 62);
+
+            One.Width = 1400;
+            One.Height = (stingrCountForImageConstructor + 4) * 62;
+
+            Graphics graphicTextForBackgroundImage = Graphics.FromImage(imageForBackground);
+            graphicTextForBackgroundImage.Clear(System.Drawing.Color.FromArgb(30, 30, 30));
+            graphicTextForBackgroundImage.DrawString(changedTextforImageConstructor, new Font("Arial", 30), new SolidBrush(System.Drawing.Color.Goldenrod), 0f, 0f);
+            graphicTextForBackgroundImage.Dispose();
+
+            FileStream streamBackgroundIamage = new FileStream(PathModifiedScreenshot, FileMode.OpenOrCreate);
+            imageForBackground.Save(streamBackgroundIamage, System.Drawing.Imaging.ImageFormat.Png);
+            imageForBackground.Dispose();
+            streamBackgroundIamage.Dispose();
+
+
+            //Dispatcher.Invoke(new Action(RefreshWindow));
+
+            //object asdsd = this.Resources["back"];
+            //Uri bbbb = new Uri("pack://application:,,,/mytest/forbackgrund.PNG");
+            //string ccc = bbbb.AbsolutePath;
+            Background = new ImageBrush(new BitmapImage(new Uri("mytest/forbackgrund.PNG", UriKind.Relative)));
+
+
+            return Task.CompletedTask;
+        }
 
 
 
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            BitmapSource imagebufer = BuferImage();
-            if (imagebufer == null)
+            
+            
+            try
+            {
+                //Dispatcher.Invoke(new Action(RefreshWindow));
+                 GetTranslate().Wait();
+                 ButtonTanslate.Visibility = Visibility.Hidden;
+
+            }
+            catch (ArgumentNullException ex)
+            {
+                ButtonTanslate.Content = $"{ex.Message}{Environment.NewLine}{ex.InnerException.Message}";
+                return;
+            }
+            catch
             {
                 return;
             }
-            using (FileStream fileStream = new FileStream(@"mytest\mytest.PNG", FileMode.OpenOrCreate))
-            {
-                BitmapEncoder encoder = new PngBitmapEncoder();
-                encoder.Frames.Add(BitmapFrame.Create(imagebufer));
-                encoder.Save(fileStream);
-
-            }
-            Tuple<ChromeDriver, WebDriverWait, Actions> configurateweb = MyClassTranslateText.ConfigurateDrive();
-            string scantotext = MyClassTranslateText.MyTrasletImage(ref configurateweb).Result;
-            if (scantotext == null)
-            {
-                return;
-            }
-            string resulttranslate = MyClassTranslateText.MyTranslate(scantotext, ref configurateweb).Result;
-            if (resulttranslate == null)
-            {
-                return;
-            }
-            configurateweb.Item1.Dispose();
-            cmd("taskkill /f /im chromedriver.exe");// chromedriver.exe
-            Tuple<string, int> sdsdt = MyClassTranslateText.MyReplaceforpng(resulttranslate).Result;
-            string resulttranslate1 = sdsdt.Item1;
-            int strcount = sdsdt.Item2;
-            Bitmap a = new Bitmap(1250, (strcount + 4) * 62);
-            One.Width = 1250;
-            One.Height = (strcount + 4) * 62;
-            Graphics g = Graphics.FromImage(a);
-            g.Clear(System.Drawing.Color.FromArgb(30, 30, 30));
-            g.DrawString(resulttranslate1, new Font("Arial", 30), new SolidBrush(System.Drawing.Color.Goldenrod), 0f, 0f);
-            g.Dispose();
-            FileStream fileS = new FileStream(@"mytest\testo.PNG", FileMode.OpenOrCreate);
-            a.Save(fileS, System.Drawing.Imaging.ImageFormat.Png);
-            a.Dispose();
-            fileS.Dispose();
-            Dispatcher.Invoke(new Action(MyFolow));
-            Bot.Visibility = Visibility.Hidden;
-            Background = new ImageBrush(new BitmapImage(new Uri(@"C:\Users\user\source\repos\WPF_Traslate_Test\bin\Debug\net5.0-windows\mytest\testo.PNG")));
-
-
         }
 
         public static void cmd(string line)
@@ -205,7 +258,7 @@ namespace WPF_Traslate_Test
             Process.Start(new ProcessStartInfo { FileName = "cmd", Arguments = $"/c {line}", WindowStyle = ProcessWindowStyle.Hidden }).WaitForExit();
         }
 
-        private static BitmapSource BuferImage()
+        private static BitmapSource GetBuferImage()
         {
             // var image1 = new BitmapImage(new Uri(@"C:\Users\user\Pictures\2.png"));
             BitmapSource image = Clipboard.GetImage();
@@ -247,9 +300,92 @@ namespace WPF_Traslate_Test
         {
 
             this.Close();
+           
 
 
 
+        }
+        public System.Windows.Forms.NotifyIcon _notifyIcon;
+       // private System.Windows.Forms.ContextMenu contextMenu;
+      //  private System.Windows.Forms.MenuItem menuItem;
+      //  private System.ComponentModel.IContainer components;
+        private void LoadMyWindow(object sender, RoutedEventArgs e)
+        {
+           // _notifyIcon = new System.Windows.Forms.NotifyIcon();
+           //// _notifyIcon.Icon = Properties.Resources.ResourceManager.GetObject("AppIcon") as Icon;
+           // _notifyIcon.Visible = true;
+        }
+        private void SetIconToMainApplication()
+        {
+           // var col = Resources.Keys;
+            _notifyIcon = new System.Windows.Forms.NotifyIcon();
+            //_notifyIcon.Icon = (Icon)this.FindResource("foricon.ico");
+
+            _notifyIcon.Icon= new Icon(@"Tic.ico");
+            _notifyIcon.Visible = true;
+            _notifyIcon.Click += ClickNotifyIcon;
+            
+
+
+
+
+        }
+        public bool MenuIsOpen = default;
+        public void ClickNotifyIcon(object sender, EventArgs e)
+        {
+            if (MenuIsOpen)
+            {
+                var adssad = App.Current.Windows;
+                object bbb = adssad.SyncRoot;
+                foreach (var item in App.Current.Windows)
+                {
+                    if (item is WPF_Traslate_Test.MenuContent)
+                    {
+                        MenuContent menu = (MenuContent)item;
+                        menu.Close();
+                        MenuIsOpen = false;
+                    }
+                }
+                return;
+            }
+            MenuIsOpen = true;
+            App.Current.ShutdownMode =  System.Windows.ShutdownMode.OnExplicitShutdown;
+            One.Visibility = Visibility.Collapsed;
+            One.Hide();
+            MenuContent menuContent = new MenuContent(this);
+            Point positionCursor = GetCursorPosition();
+            menuContent.Top = positionCursor.Y-80.00;
+            menuContent.Left = positionCursor.X+5;
+            menuContent.Show();
+            menuContent.Topmost = true;
+            
+
+            
+
+        }
+
+        private void NotClose(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            e.Cancel = true;
+            One.Hide();
+        }
+
+        private void EnterForm(object sender, MouseEventArgs e)
+        {
+            //CancellationTokenSource cts = new CancellationTokenSource();
+            //CancellationToken ct = cts.Token;
+            //cts.Cancel();
+            //Dispatcher.Invoke(new Action<CancellationTokenSource, CancellationToken>(RefreshWindow), cts, ct);
+            // cts.Cancel();
+            MyEnetrForm = true;
+        }
+
+        private void LevaeForm(object sender, MouseEventArgs e)
+        {
+            MyEnetrForm = false;
+            //CancellationTokenSource cts = new CancellationTokenSource();
+            //CancellationToken ct = cts.Token;
+            Dispatcher.Invoke(new Action(RefreshWindow));
         }
     }
 }
@@ -308,40 +444,23 @@ public class MyClassTranslateText
 
 
 
-    public class Test
+
+    public static Tuple<ChromeDriver, WebDriverWait, Actions> ConfigurateWebDrive(bool hide = false)
     {
-        //public class Tests
-        //{
-        //    public IWebDriver _webDriver;
 
-        //    public void SetUp()
-        //    {
-        //        new DriverManager().SetUpDriver(new ChromeConfig());
-        //        _webDriver = new ChromeDriver();
-        //    }
+        // ChromeDriverService chromeDriverService = ChromeDriverService.CreateDefaultService();//скрывает батник
 
-        //    public void TearDown()
-        //    {
-        //        _webDriver.Quit();
-        //    }
-
-
-        //    public void Test()
-        //    {
-        //        _webDriver.Navigate().GoToUrl("https://www.google.com");
-        //        Assert.True(_webDriver.Title.Contains("Google"));
-        //    }
-        //}
-    }
-    public static Tuple<ChromeDriver, WebDriverWait, Actions> ConfigurateDrive()    {
-
-
-       // ChromeDriverService chromeDriverService = ChromeDriverService.CreateDefaultService();//скрывает батник
-       // chromeDriverService.HideCommandPromptWindow = true;//
+        ChromeDriverService chromeDriverService = ChromeDriverService.CreateDefaultService(new DriverManager().SetUpDriver(new ChromeConfig(), VersionResolveStrategy.MatchingBrowser).Replace("\\chromedriver.exe", ""));
+        chromeDriverService.HideCommandPromptWindow = true;//
         ChromeOptions option = new ChromeOptions();
         option.AddArguments("--window-size=1920,1080");
-        option.AddArgument("--headless");  //скрывает окно
-        ChromeDriver driver = new ChromeDriver(new DriverManager().SetUpDriver(new ChromeConfig(),VersionResolveStrategy.MatchingBrowser).Replace("\\chromedriver.exe", ""), option);
+        if (hide)
+        {
+            option.AddArgument("--headless");
+        }
+        
+        //option.AddArgument("--headless");  //скрывает окно
+        ChromeDriver driver = new ChromeDriver(chromeDriverService, option);
         driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(15.00);
         driver.Manage().Timeouts().PageLoad = TimeSpan.FromSeconds(10.00);
         driver.Manage().Timeouts().AsynchronousJavaScript = TimeSpan.FromSeconds(15.00);
@@ -353,18 +472,18 @@ public class MyClassTranslateText
 
         return Tuple.Create(driver, wait, actions);
     }
-    public static Task<string> MyTranslate(string transbody, ref Tuple<ChromeDriver, WebDriverWait, Actions> configurate)
+    public static Task<string> Translate(string textForTranslate, ref Tuple<ChromeDriver, WebDriverWait, Actions> configurate)
     {//  ((IJavaScriptExecutor)driver).ExecuteScript("document.body.style.transform='scale(0.5)';");
-       // Tuple<ChromeDriver, WebDriverWait, Actions> config = configurate;
+     // Tuple<ChromeDriver, WebDriverWait, Actions> config = configurate;
         ChromeDriver driver = configurate.Item1;
         WebDriverWait wait = configurate.Item2;
         Actions actions = configurate.Item3;
 
-        driver.Navigate().GoToUrl(urlbody); 
+        driver.Navigate().GoToUrl(urlbody);
 
         IWebElement restagrget = driver.FindElement(By.XPath("html/body"));
 
-        restagrget.SendKeys(transbody);
+        restagrget.SendKeys(textForTranslate);
 
 
         IWebElement results = driver.FindElement(By.XPath("//*[@id='target-dummydiv']"));
@@ -372,52 +491,68 @@ public class MyClassTranslateText
 
 
         //IWebElement myrestranslate = wait.Until(SeleniumExtras.WaitHelpers.ExpectedConditions.ElementToBeClickable(By.XPath("//*[@class='results-text result']")));
+        string translate = null;
         IWebElement myrestranslate = wait.Until(x =>
         {
-            int strlenght = transbody.Length;
+            int strlenght = textForTranslate.Length;
 
-            for (;;)
+            for (; ; )
             {
                 
-                string aaa = results.GetAttribute("innerHTML");
-                double res = strlenght / aaa.Length;  //  248/24 = 10.333
-                double res2 = 100 / res;              // 100% / 10.333 = 9.677 %
-                if (res2>90)          
+                string aaa = results.GetAttribute("textContent");
+                
+
+                double res1 = strlenght / aaa.Length;  //  248/24 = 10.333
+                double res2 = 100 / res1;              // 100% / 10.333 = 9.677 %
+                if (res2 > 90)
                 {
+                    aaa = aaa.Replace(Environment.NewLine, string.Empty);
+                    translate = aaa;
                     break;
                 }
                 Thread.Sleep(30);
 
             }
 
-            
+            //string res;
+            //for (int i = 0; ; i++)
+            //{
+            //    string aaa = results.GetAttribute("innerHTML");
+
+            //    if (aaa != "" && aaa != "\r\n")
+            //    {
+            //        res = aaa.Replace("\r", "").Replace("\n", "");
+            //        break;
+            //    }
+            //}
+
+                //string aaa = results.GetAttribute("textContent");
+
+                //if (aaa != string.Empty && aaa != "\r\n")
+                //{
+                //    res = aaa.Replace("\r", "").Replace("\n", "");
+                //    break;
+                //}
+         
 
 
 
 
-            return driver.FindElement(By.XPath("//*[@id='target-dummydiv']"));
+
+            return results;
 
         });
-  
-        string res;
-        for (int i = 0; ; i++)
-        {   string aaa = results.GetAttribute("innerHTML");
-                       
-            if (aaa != "" && aaa != "\r\n")
-            {
-                res = aaa.Replace("\r", "").Replace("\n", "");
-                break;
-            }
-        }
-        HtmlDocument doc = new HtmlDocument();
-        doc.LoadHtml(results.GetAttribute("innerHTML"));
-        string translate = doc.Text;
-        //driver.Dispose();
+
+ 
+        //HtmlDocument doc = new HtmlDocument();
+        //doc.LoadHtml(results.GetAttribute("innerHTML"));
+        //string translate = doc.Text;
+
         return Task.FromResult(translate) ?? null;
 
     }
 
-    public static Task<string> MyTrasletImage(ref Tuple<ChromeDriver, WebDriverWait, Actions> configurate)
+    public static Task<string> ScanImageToText(ref Tuple<ChromeDriver, WebDriverWait, Actions> configurate)
     {
         //ChromeOptions option = new ChromeOptions();
         //option.AddArguments("--window-size=1920,1080");
@@ -435,7 +570,7 @@ public class MyClassTranslateText
 
         TimeSpan ssddddwww = driver.Manage().Timeouts().ImplicitWait;
         driver.Navigate().GoToUrl("https://img2txt.com/ru");
-        string filePath = @"C:\Users\user\source\repos\WPF_Traslate_Test\bin\Debug\net5.0-windows\mytest\mytest.PNG";
+       // string filePath = @"C:\Users\user\source\repos\WPF_Traslate_Test\bin\Debug\net5.0-windows\mytest\origianal.PNG";
         IWebElement langMenu = driver.FindElement(By.XPath("//*[@class='select2-selection__rendered']"));
         IWebElement cooce = driver.FindElement(By.XPath("//*[@aria-label='dismiss cookie message']"));
         actions.MoveToElement(cooce);
@@ -444,33 +579,36 @@ public class MyClassTranslateText
         //actions.MoveToElement(langMenu);
         IWebElement element = wait.Until(SeleniumExtras.WaitHelpers.ExpectedConditions.ElementToBeClickable(langMenu));
         langMenu.Click();
-        IWebElement contexLangMenu = driver.FindElement(By.XPath("//*[@class='select2-selection select2-selection--single']"));         
+        IWebElement contexLangMenu = driver.FindElement(By.XPath("//*[@class='select2-selection select2-selection--single']"));
 
         contexLangMenu.SendKeys(Keys.Down);
         contexLangMenu.SendKeys(Keys.Down);
         contexLangMenu.SendKeys(Keys.Enter);
 
+
+
+
         IWebElement results = driver.FindElement(By.XPath("//*[@class='dz-hidden-input']"));
-        results.SendKeys(filePath);
+        results.SendKeys(Path.GetFullPath("mytest/origianal.PNG"));
         Thread.Sleep(440); // Ожидание
         IWebElement downoad = driver.FindElement(By.XPath("//*[@class='form-bottom']"));
         downoad.Click();
         IWebElement myrestranslate = wait.Until(SeleniumExtras.WaitHelpers.ExpectedConditions.ElementToBeClickable(By.XPath("//*[@class='results-text result']")));
         HtmlDocument doc = new HtmlDocument();
         doc.LoadHtml(myrestranslate.GetAttribute("innerHTML"));
-        string Mytransresult = doc.DocumentNode.FirstChild.EndNode.NextSibling.InnerHtml.Replace("", "");
+        string Mytransresult = doc.DocumentNode.FirstChild.EndNode.NextSibling.InnerHtml.Replace("", string.Empty);
 
 
 
 
-       // driver.Dispose();
+        // driver.Dispose();
         return Task.FromResult(Mytransresult) ?? null;
 
 
 
 
     }
-    public static Task<Tuple<string,int>> MyReplaceforpng(string rep)
+    public static Task<Tuple<string, int>> ReplaceTextForImage(string rep)
     {
         List<int> vs = new List<int>();
         for (int i = 0; ; i++)
@@ -515,8 +653,8 @@ public class MyClassTranslateText
         }
         string myASSSS = rep;
         for (int i = 0; i < myrescount.Count; i++)
-        {          
-                myASSSS = myASSSS.Remove(myrescount[i] + 1 * i, 1).Insert(myrescount[i] + 1 * i, Environment.NewLine);         
+        {
+            myASSSS = myASSSS.Remove(myrescount[i] + 1 * i, 1).Insert(myrescount[i] + 1 * i, Environment.NewLine);
         }
         return Task.FromResult(Tuple.Create(myASSSS, myrescount.Count));
     }
