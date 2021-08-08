@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WPF_Traslate_Test"
         mc:Ignorable="d"
-        Title="MenuContent" Height="80" Width="150 " WindowState="Normal" ResizeMode="NoResize" WindowStyle="None" Activated="Window_Activated">
+        Title="MenuContent" Height="80" Width="150 " WindowState="Normal" ResizeMode="NoResize" WindowStyle="None" Activated="Window_Activated" MouseEnter="Window_MouseEnter" MouseLeave="Window_MouseLeave">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="0*"/>

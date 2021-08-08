@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -18,9 +19,11 @@ namespace WPF_Traslate_Test
     /// <summary>
     /// Логика взаимодействия для MenuContent.xaml
     /// </summary>
-    public partial class MenuContent : Window, IDisposable
+    public partial class MenuContent : Window
     {
+        private static MouseHook mouseHook;
         private static MainWindow GlobalWindow;
+        private static bool MyClickBoard;
         public MenuContent(MainWindow window)
         {
             InitializeComponent();
@@ -30,76 +33,60 @@ namespace WPF_Traslate_Test
             {
                 buttonHide.Content = "Процес скрыт";
             }
+            mouseHook = new MouseHook();
 
-            
+
+            mouseHook.LeftButtonDown += ClickMouseOutside;
+            mouseHook.Install();
+
         }
+
+        private async void ClickMouseOutside(MouseHook.MSLLHOOKSTRUCT mouseStruct)
+        {
+            bool myReturn = false;
+            void ret(object sender, EventArgs e)
+            {
+               // Thread.Sleep(300);
+                myReturn = true;
+            }
+            GlobalWindow._notifyIcon.Click += ret;
+            await Task.Delay(200);
+            if (!MyClickBoard)
+            {
+                if (myReturn)
+                {
+                    GlobalWindow._notifyIcon.Click -= ret;
+                    return;
+                }
+                else
+                {
+                    if (GlobalWindow.MenuIsOpen)
+                    {
+                        var adssad = App.Current.Windows;
+                        //  object bbb = adssad.SyncRoot;
+                        foreach (var item in App.Current.Windows)
+                        {
+                            if (item is WPF_Traslate_Test.MenuContent)
+                            {
+                                MenuContent menu = (MenuContent)item;
+                                //menu.Dispose();
+                                menu.Close();
+                                GlobalWindow.MenuIsOpen = false;
+                            }
+                        }
+                        return;
+                    }
+                }
+                //this.Dispose();
+               
+               // MyClickBoard = !MyClickBoard;
+            }
+            
+
+
+        }
+
         
-        //[DllImport("user32.dll")]
-        //static extern IntPtr SetWindowsHookEx(int idHook, LowLevelKeyboardProc callback, IntPtr hInstance, uint threadId);
-
-        //[DllImport("user32.dll")]
-        //static extern bool UnhookWindowsHookEx(IntPtr hInstance);
-
-        //[DllImport("user32.dll")]
-        //static extern IntPtr CallNextHookEx(IntPtr idHook, int nCode, int wParam, IntPtr lParam);
-
-        //[DllImport("kernel32.dll")]
-        //static extern IntPtr LoadLibrary(string lpFileName);
-
-        //private delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
-
-        //const int WH_KEYBOARD_LL = 13; // Номер глобального LowLevel-хука на клавиатуру
-        //const int WM_KEYDOWN = 0x100; // Сообщения нажатия клавиши
-
-        //private LowLevelKeyboardProc _proc = hookProc;
-
-        //private static IntPtr hhook = IntPtr.Zero;
-
-        //public void SetHook()
-        //{
-        //    IntPtr hInstance = LoadLibrary("User32");
-        //    hhook = SetWindowsHookEx(WH_KEYBOARD_LL, _proc, hInstance, 0);
-        //}
-
-        //public static void UnHook()
-        //{
-        //    UnhookWindowsHookEx(hhook);
-        //}
-
-        //public static IntPtr hookProc(int code, IntPtr wParam, IntPtr lParam)
-        //{
-        //    if (code >= 0 && wParam == (IntPtr)WM_KEYDOWN)
-        //    {
-        //        int vkCode = Marshal.ReadInt32(lParam);
-        //        //////ОБРАБОТКА НАЖАТИЯ
-        //        myfunc(); // ошибка
-        //        return (IntPtr)1;
-        //    }
-        //    else
-        //        return CallNextHookEx(hhook, code, (int)wParam, lParam);
-        //}
-
-        //private void Form1_Closing(object sender, System.ComponentModel.CancelEventArgs e)
-        //{
-        //    // убираем хук
-        //    UnHook();
-
-        //}
-
-        //private void Form1_Load(object sender, EventArgs e)
-        //{
-        //    SetHook();
-        //}
-
-        //public void myfunc()
-        //{
-
-        //    MessageBox.Show("Hello!");
-
-        //}
-
-
-
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
@@ -126,7 +113,7 @@ namespace WPF_Traslate_Test
 
         public void Dispose()
         {
-            throw new NotImplementedException();
+            mouseHook.Uninstall();
         }
 
         private void ClearFormClick(object sender, RoutedEventArgs e)
@@ -168,6 +155,14 @@ namespace WPF_Traslate_Test
             }
         }
 
+        private void Window_MouseEnter(object sender, MouseEventArgs e)
+        {
+            MyClickBoard = true;
+        }
 
+        private void Window_MouseLeave(object sender, MouseEventArgs e)
+        {
+            MyClickBoard = false;
+        }
     }
 }

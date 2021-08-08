@@ -65,7 +65,7 @@ namespace WPF_Traslate_Test
 
         public static void Method_Name()
         {
-            
+
         }
 
         private static volatile Queue<Point> myPoints = new Queue<Point>();
@@ -73,10 +73,10 @@ namespace WPF_Traslate_Test
         //  public static CancellationTokenSource cts = new CancellationTokenSource();
         //  CancellationToken ct = cts.Token;
         public static volatile bool MyEnetrForm;
-        
+
         public async void RefreshWindow()
         {
-            
+
             //double screenRealWidth = SystemParameters.PrimaryScreenWidth * (dpiBase * getScalingFactor()) / dpiBase;
             //double screenRealHeight = SystemParameters.PrimaryScreenHeight * (dpiBase * getScalingFactor()) / dpiBase;
 
@@ -84,11 +84,11 @@ namespace WPF_Traslate_Test
             //PresentationSource.FromVisual(Application.Current.MainWindow).CompositionTarget.TransformToDevice;
             //double dx = m.M11;
             //double dy = m.M22;
-;
+            ;
 
             await Task.Run(() =>
             {
-               
+
                 Dispatcher.Invoke(async () =>
                 {
                     for (; ; )
@@ -97,7 +97,7 @@ namespace WPF_Traslate_Test
                         {
                             break;
                         }
-                        
+
                         //  248/24 = 10.333
                         // 100% / 10.333 = 9.677 %
                         if (startfor)
@@ -162,7 +162,7 @@ namespace WPF_Traslate_Test
             });
 
 
-           
+
 
         }
 
@@ -182,11 +182,11 @@ namespace WPF_Traslate_Test
                 encoder.Save(createFileFromImageBuffer);
 
             }
-           
-            
+
+
             Tuple<ChromeDriver, WebDriverWait, Actions> configurateWebDriver = MyClassTranslateText.ConfigurateWebDrive(myHideWindow);
-                                 
-            
+
+
 
             string scanTextImage = MyClassTranslateText.ScanImageToText(ref configurateWebDriver).Result;
             if (scanTextImage == null) throw new ArgumentNullException("Ошибка Скан", new Exception("scanTextImage"));
@@ -233,13 +233,13 @@ namespace WPF_Traslate_Test
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            
-            
+
+
             try
             {
                 //Dispatcher.Invoke(new Action(RefreshWindow));
-                 GetTranslate().Wait();
-                 ButtonTanslate.Visibility = Visibility.Hidden;
+                GetTranslate().Wait();
+                ButtonTanslate.Visibility = Visibility.Hidden;
 
             }
             catch (ArgumentNullException ex)
@@ -300,31 +300,31 @@ namespace WPF_Traslate_Test
         {
 
             this.Close();
-           
+
 
 
 
         }
         public System.Windows.Forms.NotifyIcon _notifyIcon;
-       // private System.Windows.Forms.ContextMenu contextMenu;
-      //  private System.Windows.Forms.MenuItem menuItem;
-      //  private System.ComponentModel.IContainer components;
+        // private System.Windows.Forms.ContextMenu contextMenu;
+        //  private System.Windows.Forms.MenuItem menuItem;
+        //  private System.ComponentModel.IContainer components;
         private void LoadMyWindow(object sender, RoutedEventArgs e)
         {
-           // _notifyIcon = new System.Windows.Forms.NotifyIcon();
-           //// _notifyIcon.Icon = Properties.Resources.ResourceManager.GetObject("AppIcon") as Icon;
-           // _notifyIcon.Visible = true;
+            // _notifyIcon = new System.Windows.Forms.NotifyIcon();
+            //// _notifyIcon.Icon = Properties.Resources.ResourceManager.GetObject("AppIcon") as Icon;
+            // _notifyIcon.Visible = true;
         }
         private void SetIconToMainApplication()
         {
-           // var col = Resources.Keys;
+            // var col = Resources.Keys;
             _notifyIcon = new System.Windows.Forms.NotifyIcon();
             //_notifyIcon.Icon = (Icon)this.FindResource("foricon.ico");
 
-            _notifyIcon.Icon= new Icon(@"Tic.ico");
+            _notifyIcon.Icon = new Icon(@"Tic.ico");
             _notifyIcon.Visible = true;
             _notifyIcon.Click += ClickNotifyIcon;
-            
+
 
 
 
@@ -336,12 +336,13 @@ namespace WPF_Traslate_Test
             if (MenuIsOpen)
             {
                 var adssad = App.Current.Windows;
-                object bbb = adssad.SyncRoot;
+              //  object bbb = adssad.SyncRoot;
                 foreach (var item in App.Current.Windows)
                 {
                     if (item is WPF_Traslate_Test.MenuContent)
                     {
                         MenuContent menu = (MenuContent)item;
+                        //menu.Dispose();
                         menu.Close();
                         MenuIsOpen = false;
                     }
@@ -349,18 +350,18 @@ namespace WPF_Traslate_Test
                 return;
             }
             MenuIsOpen = true;
-            App.Current.ShutdownMode =  System.Windows.ShutdownMode.OnExplicitShutdown;
+            App.Current.ShutdownMode = System.Windows.ShutdownMode.OnExplicitShutdown;
             One.Visibility = Visibility.Collapsed;
             One.Hide();
             MenuContent menuContent = new MenuContent(this);
             Point positionCursor = GetCursorPosition();
-            menuContent.Top = positionCursor.Y-80.00;
-            menuContent.Left = positionCursor.X+5;
+            menuContent.Top = positionCursor.Y - 80.00;
+            menuContent.Left = positionCursor.X + 5;
             menuContent.Show();
             menuContent.Topmost = true;
-            
 
-            
+
+
 
         }
 
@@ -458,7 +459,7 @@ public class MyClassTranslateText
         {
             option.AddArgument("--headless");
         }
-        
+
         //option.AddArgument("--headless");  //скрывает окно
         ChromeDriver driver = new ChromeDriver(chromeDriverService, option);
         driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(15.00);
@@ -498,9 +499,9 @@ public class MyClassTranslateText
 
             for (; ; )
             {
-                
+
                 string aaa = results.GetAttribute("textContent");
-                
+
 
                 double res1 = strlenght / aaa.Length;  //  248/24 = 10.333
                 double res2 = 100 / res1;              // 100% / 10.333 = 9.677 %
@@ -526,14 +527,14 @@ public class MyClassTranslateText
             //    }
             //}
 
-                //string aaa = results.GetAttribute("textContent");
+            //string aaa = results.GetAttribute("textContent");
 
-                //if (aaa != string.Empty && aaa != "\r\n")
-                //{
-                //    res = aaa.Replace("\r", "").Replace("\n", "");
-                //    break;
-                //}
-         
+            //if (aaa != string.Empty && aaa != "\r\n")
+            //{
+            //    res = aaa.Replace("\r", "").Replace("\n", "");
+            //    break;
+            //}
+
 
 
 
@@ -543,7 +544,7 @@ public class MyClassTranslateText
 
         });
 
- 
+
         //HtmlDocument doc = new HtmlDocument();
         //doc.LoadHtml(results.GetAttribute("innerHTML"));
         //string translate = doc.Text;
@@ -570,7 +571,7 @@ public class MyClassTranslateText
 
         TimeSpan ssddddwww = driver.Manage().Timeouts().ImplicitWait;
         driver.Navigate().GoToUrl("https://img2txt.com/ru");
-       // string filePath = @"C:\Users\user\source\repos\WPF_Traslate_Test\bin\Debug\net5.0-windows\mytest\origianal.PNG";
+        // string filePath = @"C:\Users\user\source\repos\WPF_Traslate_Test\bin\Debug\net5.0-windows\mytest\origianal.PNG";
         IWebElement langMenu = driver.FindElement(By.XPath("//*[@class='select2-selection__rendered']"));
         IWebElement cooce = driver.FindElement(By.XPath("//*[@aria-label='dismiss cookie message']"));
         actions.MoveToElement(cooce);

@@ -11,6 +11,7 @@
     <SignAssembly>false</SignAssembly>
     <AssemblyName>Переводчик с экрана by FarmV</AssemblyName>
     <ApplicationIcon>Tic.ico</ApplicationIcon>
+    <Version>1.0.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
