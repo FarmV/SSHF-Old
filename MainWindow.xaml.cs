@@ -60,7 +60,20 @@ namespace WPF_Traslate_Test
         {
             InitializeComponent();
             SetIconToMainApplication();
+            HookIntiallize();
+            ButtonTanslate.Visibility = Visibility.Hidden;
+            this.Visibility = Visibility.Hidden;
+            // this.One.Background = new ImageBrush(new BitmapImage(new Uri("mytest/origianal.PNG", UriKind.Relative)));
         }
+
+        private void HookIntiallize()
+        {
+            KeyboardHook keyboardHook = new KeyboardHook();
+            keyboardHook.KeyDown += new KeyboardHook.KeyboardHookCallback(keyboardHook_KeyDown);
+            keyboardHook.KeyUp += new KeyboardHook.KeyboardHookCallback(keyboardHook_KeyUp);
+            keyboardHook.Install();
+        }
+
         //private System.Windows.Forms.NotifyIcon _notifyIcon;
 
         public static void Method_Name()
@@ -223,7 +236,10 @@ namespace WPF_Traslate_Test
             //Uri bbbb = new Uri("pack://application:,,,/mytest/forbackgrund.PNG");
             //string ccc = bbbb.AbsolutePath;
             Background = new ImageBrush(new BitmapImage(new Uri("mytest/forbackgrund.PNG", UriKind.Relative)));
-
+            if (this.One.Visibility == Visibility.Hidden)
+            {
+                this.Show();
+            }
 
             return Task.CompletedTask;
         }
@@ -239,7 +255,9 @@ namespace WPF_Traslate_Test
             {
                 //Dispatcher.Invoke(new Action(RefreshWindow));
                 GetTranslate().Wait();
-                ButtonTanslate.Visibility = Visibility.Hidden;
+                // ButtonTanslate.Visibility = Visibility.Hidden;
+
+             
 
             }
             catch (ArgumentNullException ex)
@@ -252,6 +270,106 @@ namespace WPF_Traslate_Test
                 return;
             }
         }
+
+        private void keyboardHook_KeyUp(KeyboardHook.VKeys key)
+        {
+            if (key == KeyboardHook.VKeys.KEY_A)
+            {
+                KeyADown = false;
+            }
+            if (key == KeyboardHook.VKeys.LWIN)
+            {
+                LWINDown = false;
+            }
+            if (key == KeyboardHook.VKeys.LSHIFT)
+            {
+                LSHIFTDown = false;
+
+            }
+            if (key == KeyboardHook.VKeys.CAPITAL)
+            {
+                CapitalDown = false;
+
+            }
+
+        }
+
+        bool KeyADown = false;
+        bool LWINDown = false;
+        bool LSHIFTDown = false;
+        bool CapitalDown = false;
+
+
+        private void keyboardHook_KeyDown(KeyboardHook.VKeys key)
+        {
+            
+            if (key == KeyboardHook.VKeys.KEY_A)
+            {
+                KeyADown = true;
+            }
+            if (key == KeyboardHook.VKeys.LWIN)
+            {
+                LWINDown = true;
+
+            }
+            if (key == KeyboardHook.VKeys.LSHIFT)
+            {
+                LSHIFTDown = true;
+
+            }
+            if (key == KeyboardHook.VKeys.CAPITAL)
+            {
+                CapitalDown = true;
+
+            }
+
+            if (KeyADown & LWINDown & LSHIFTDown)
+            {
+                try
+                {
+                    BitmapSource imageFromBuffer = GetBuferImage();
+                    if (imageFromBuffer == null) throw new ArgumentNullException("Буфер пустой", new Exception("imageFromBuffer"));
+
+
+                    this.One.Width = imageFromBuffer.Width;
+                    this.One.Height = imageFromBuffer.Height;
+
+                    Background = new ImageBrush(imageFromBuffer);
+                    
+                    this.Focus();
+                    this.Topmost = true;
+                    if (this.Visibility == Visibility.Hidden)
+                    {
+                        this.Show();
+                    }
+                    
+                    
+
+                }
+                catch (ArgumentNullException ex)
+                {
+
+                    ButtonTanslate.Content = $"{ex.Message}{Environment.NewLine}{ex.InnerException.Message}";
+                    return;
+                }
+                catch
+                {
+                    return;
+                }
+
+            }
+            if (LWINDown & LSHIFTDown & CapitalDown)
+            {
+                this.Hide();
+                Button_Click(new object(), new RoutedEventArgs());
+            }
+            else
+            {
+                ButtonTanslate.Content = key;
+            }
+        }
+
+
 
         public static void cmd(string line)
         {
@@ -336,7 +454,7 @@ namespace WPF_Traslate_Test
             if (MenuIsOpen)
             {
                 var adssad = App.Current.Windows;
-              //  object bbb = adssad.SyncRoot;
+                //  object bbb = adssad.SyncRoot;
                 foreach (var item in App.Current.Windows)
                 {
                     if (item is WPF_Traslate_Test.MenuContent)

@@ -70,6 +70,7 @@ namespace WPF_Traslate_Test
                             {
                                 MenuContent menu = (MenuContent)item;
                                 //menu.Dispose();
+                                mouseHook.Uninstall();
                                 menu.Close();
                                 GlobalWindow.MenuIsOpen = false;
                             }
@@ -99,6 +100,12 @@ namespace WPF_Traslate_Test
 
         private void Button_Click_1(object sender, RoutedEventArgs e)
         {
+            
+            if (GlobalWindow.One.Width == GlobalWindow.ButtonTanslate.ActualWidth && GlobalWindow.One.Height == GlobalWindow.ButtonTanslate.ActualHeight)
+            {
+                return;
+            }
+
             GlobalWindow.One.Show();
             GlobalWindow.One.Visibility = Visibility.Visible;
             GlobalWindow.MenuIsOpen = false;
@@ -119,10 +126,13 @@ namespace WPF_Traslate_Test
         private void ClearFormClick(object sender, RoutedEventArgs e)
         {
           //  GlobalWindow.One.Background = default;
-            GlobalWindow.ButtonTanslate.Visibility = Visibility.Visible;
+           // GlobalWindow.ButtonTanslate.Visibility = Visibility.Visible;
             GlobalWindow.One.Width = GlobalWindow.ButtonTanslate.ActualWidth;
             GlobalWindow.One.Height = GlobalWindow.ButtonTanslate.ActualHeight;
-            
+            GlobalWindow.One.Background = Brushes.Transparent;
+            GlobalWindow.Hide();
+
+
         }
 
         private void Window_Activated(object sender, EventArgs e)
