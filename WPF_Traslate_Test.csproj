@@ -12,6 +12,7 @@
     <AssemblyName>Переводчик с экрана by FarmV</AssemblyName>
     <ApplicationIcon>Tic.ico</ApplicationIcon>
     <Version>1.0.0</Version>
+	 <DebugType>embedded</DebugType>
   </PropertyGroup>
 
   <ItemGroup>
@@ -39,9 +40,9 @@
   <ItemGroup>
     <Resource Include="mytest\forbackgrund.PNG" />
     <Resource Include="mytest\origianal.PNG" />
-    <Resource Include="Tic.ico">
+    <EmbeddedResource Include="Tic.ico">
       <CopyToOutputDirectory></CopyToOutputDirectory>
-    </Resource>
+    </EmbeddedResource>
   </ItemGroup>
 
 </Project>

@@ -30,6 +30,9 @@ using Point = System.Windows.Point;
 using System.Diagnostics;
 using WebDriverManager.Helpers;
 using Path = System.IO.Path;
+using System.Reflection;
+using static System.Net.Mime.MediaTypeNames;
+using System.Windows.Interop;
 
 [assembly: DisableDpiAwareness]
 
@@ -65,12 +68,12 @@ namespace WPF_Traslate_Test
             this.Visibility = Visibility.Hidden;
             // this.One.Background = new ImageBrush(new BitmapImage(new Uri("mytest/origianal.PNG", UriKind.Relative)));
         }
-
+        private KeyboardHook keyboardHook;
         private void HookIntiallize()
         {
-            KeyboardHook keyboardHook = new KeyboardHook();
-            keyboardHook.KeyDown += new KeyboardHook.KeyboardHookCallback(keyboardHook_KeyDown);
+            keyboardHook = new KeyboardHook();
             keyboardHook.KeyUp += new KeyboardHook.KeyboardHookCallback(keyboardHook_KeyUp);
+            keyboardHook.KeyDown += new KeyboardHook.KeyboardHookCallback(keyboardHook_KeyDown);
             keyboardHook.Install();
         }
 
@@ -239,6 +242,7 @@ namespace WPF_Traslate_Test
             if (this.One.Visibility == Visibility.Hidden)
             {
                 this.Show();
+               // HookIntiallize();
             }
 
             return Task.CompletedTask;
@@ -362,6 +366,9 @@ namespace WPF_Traslate_Test
             {
                 this.Hide();
                 Button_Click(new object(), new RoutedEventArgs());
+                //keyboardHook.KeyUp -= new KeyboardHook.KeyboardHookCallback(keyboardHook_KeyUp);
+              //  keyboardHook.KeyDown -= new KeyboardHook.KeyboardHookCallback(keyboardHook_KeyDown);
+              //  keyboardHook.Uninstall();
             }
             else
             {
@@ -435,18 +442,31 @@ namespace WPF_Traslate_Test
         }
         private void SetIconToMainApplication()
         {
-            // var col = Resources.Keys;
+           
             _notifyIcon = new System.Windows.Forms.NotifyIcon();
-            //_notifyIcon.Icon = (Icon)this.FindResource("foricon.ico");
+         //   var aaaa = System.Reflection.Assembly.GetExecutingAssembly().Location;
+           // var bbbb = AppContext.BaseDirectory;
 
-            _notifyIcon.Icon = new Icon(@"Tic.ico");
+            // _notifyIcon.Icon = System.Drawing.Icon.ExtractAssociatedIcon(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            // _notifyIcon.Icon = System.Drawing.Icon.ExtractAssociatedIcon(AppContext.BaseDirectory);
+            //string codeBase = Assembly.GetExecutingAssembly().CodeBase;
+            //UriBuilder uri = new UriBuilder(codeBase);
+            //string path = Uri.UnescapeDataString(uri.Path);
+
+
+           // Icon ico = System.Drawing.Icon.ExtractAssociatedIcon(@"C:\WINDOWS\system32\notepad.exe");
+
+           // string bbbba = $"{AppContext.BaseDirectory}{Process.GetCurrentProcess().ProcessName}.exe";
+
+           // Icon ico2 = System.Drawing.Icon.ExtractAssociatedIcon($"{AppContext.BaseDirectory}{Process.GetCurrentProcess().ProcessName}");
+
+
+
+
+            _notifyIcon.Icon = System.Drawing.Icon.ExtractAssociatedIcon($"{AppContext.BaseDirectory}{Process.GetCurrentProcess().ProcessName}.exe");
+            // _notifyIcon.Icon = new Icon(@"Tic.ico");
             _notifyIcon.Visible = true;
             _notifyIcon.Click += ClickNotifyIcon;
-
-
-
-
-
         }
         public bool MenuIsOpen = default;
         public void ClickNotifyIcon(object sender, EventArgs e)
