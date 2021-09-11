@@ -473,7 +473,7 @@ namespace WPF_Traslate_Test
         {
             if (MenuIsOpen)
             {
-                var adssad = App.Current.Windows;
+                WindowCollection adssad = App.Current.Windows;
                 //  object bbb = adssad.SyncRoot;
                 foreach (var item in App.Current.Windows)
                 {
@@ -493,12 +493,39 @@ namespace WPF_Traslate_Test
             One.Hide();
             MenuContent menuContent = new MenuContent(this);
             Point positionCursor = GetCursorPosition();
-            menuContent.Top = positionCursor.Y - 80.00;
-            menuContent.Left = positionCursor.X + 5;
-            menuContent.Show();
             menuContent.Topmost = true;
+            double resolutionWidth = SystemParameters.PrimaryScreenWidth;
+            double resolutionHeight = SystemParameters.PrimaryScreenHeight;
+            
+            WindowCollection windowsMyApp = App.Current.Windows;
 
+            double posT =  menuContent.Top = positionCursor.Y - 80.00;
+            double posL =  menuContent.Left = positionCursor.X + 5;
+            menuContent.Show();
+            double menuWidth = default;
+            double menuHeight = default;
+            foreach (var item in App.Current.Windows)
+            {
+                if (item is WPF_Traslate_Test.MenuContent)
+                {
+                    MenuContent menu = (MenuContent)item;
 
+                    menuWidth = menu.ActualWidth;
+                    menuHeight = menu.ActualHeight;
+                }
+            }           
+            if (menuWidth + positionCursor.X > resolutionWidth)
+            {
+                //menuContent.Left = resolutionHeight - menuHeight;
+                menuContent.Left = resolutionWidth - menuWidth;
+                menuContent.Left = positionCursor.X - (menuWidth +5);
+            }
+            if (menuHeight + positionCursor.Y < resolutionHeight)
+            {
+                //menuContent.Left = resolutionHeight - menuHeight;
+                menuContent.Top = resolutionHeight - menuHeight;
+                menuContent.Top = positionCursor.Y - (menuHeight - 80.00);
+            }
 
 
         }
