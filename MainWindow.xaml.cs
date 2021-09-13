@@ -46,8 +46,22 @@ namespace WPF_Traslate_Test
         public void Dispose()
         {
             GC.SuppressFinalize(this);
-            cmd("taskkill /f /im chromedriver.exe");
-            _notifyIcon.Dispose();
+            if (!SingleProgramCheck())
+            {
+
+            }
+            else
+            {
+              cmd("taskkill /f /im chromedriver.exe");
+            }
+            try
+            {
+             _notifyIcon.Dispose();
+            }
+            catch (Exception)
+            {
+                                
+            };
         }
 
 
@@ -61,13 +75,29 @@ namespace WPF_Traslate_Test
         }
         public MainWindow()
         {
-            InitializeComponent();
+            InitializeComponent();           
+            if (!SingleProgramCheck())
+            {
+               App.Current.Shutdown();
+                this.Dispose();
+                return;
+            }
             SetIconToMainApplication();
             HookIntiallize();
             ButtonTanslate.Visibility = Visibility.Hidden;
             this.Visibility = Visibility.Hidden;
             // this.One.Background = new ImageBrush(new BitmapImage(new Uri("mytest/origianal.PNG", UriKind.Relative)));
         }
+
+        private static Mutex InstanceCheckMutex;
+        private static bool SingleProgramCheck()
+        {
+            bool isNew = true;
+            InstanceCheckMutex = new Mutex(true, "MyMutexSingleProgramCheck", out isNew);
+            return isNew;
+
+        }
+
         private KeyboardHook keyboardHook;
         private void HookIntiallize()
         {
@@ -499,8 +529,8 @@ namespace WPF_Traslate_Test
             
             WindowCollection windowsMyApp = App.Current.Windows;
 
-            double posT =  menuContent.Top = positionCursor.Y - 80.00;
-            double posL =  menuContent.Left = positionCursor.X + 5;
+            double posT = menuContent.Top = positionCursor.Y - 80.00;
+            double posL = menuContent.Left = positionCursor.X + 5;
             menuContent.Show();
             double menuWidth = default;
             double menuHeight = default;
@@ -513,7 +543,8 @@ namespace WPF_Traslate_Test
                     menuWidth = menu.ActualWidth;
                     menuHeight = menu.ActualHeight;
                 }
-            }           
+            }
+            
             if (menuWidth + positionCursor.X > resolutionWidth)
             {
                 //menuContent.Left = resolutionHeight - menuHeight;
