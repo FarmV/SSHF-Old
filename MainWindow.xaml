@@ -10,8 +10,6 @@
         
     <Window.Resources>
         <Style TargetType="TextBlock" x:Key="TitleText"></Style>
-        <Image x:Name="myImageBack" Source="mytest/forbackgrund.PNG" x:Key="back" />
-        <Image x:Name="myImageOriginal" Source="mytest/origianal.PNG" x:Key="original" />
     </Window.Resources>
 
 

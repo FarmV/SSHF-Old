@@ -33,6 +33,7 @@ using Path = System.IO.Path;
 using System.Reflection;
 using static System.Net.Mime.MediaTypeNames;
 using System.Windows.Interop;
+using System.IO.MemoryMappedFiles;
 
 [assembly: DisableDpiAwareness]
 
@@ -50,17 +51,28 @@ namespace WPF_Traslate_Test
             {
 
             }
-            else
+            if (!SingleProgramCheck())
             {
               cmd("taskkill /f /im chromedriver.exe");
+
             }
+            
+            
             try
             {
+               // this.Background = new SolidColorBrush();
+                try
+                {
+                    CheckTempFiles(true);
+                }
+                catch (Exception)
+                {
+                }
              _notifyIcon.Dispose();
             }
             catch (Exception)
             {
-                                
+               
             };
         }
 
@@ -75,6 +87,7 @@ namespace WPF_Traslate_Test
         }
         public MainWindow()
         {
+            
             InitializeComponent();           
             if (!SingleProgramCheck())
             {
@@ -83,10 +96,32 @@ namespace WPF_Traslate_Test
                 return;
             }
             SetIconToMainApplication();
+            cmd("taskkill /f /im chromedriver.exe");
             HookIntiallize();
+            CheckTempFiles();
             ButtonTanslate.Visibility = Visibility.Hidden;
             this.Visibility = Visibility.Hidden;
             // this.One.Background = new ImageBrush(new BitmapImage(new Uri("mytest/origianal.PNG", UriKind.Relative)));
+        }
+
+        private static void CheckTempFiles(bool delete = false)
+        {
+            string pathTemporary = $"{System.IO.Path.GetTempPath()}myAPP";
+            DirectoryInfo directory = new DirectoryInfo(pathTemporary);
+            if (Directory.Exists(pathTemporary) & delete == false)
+            {
+               // MessageBox.Show("true");
+               // directory.Delete();
+            }
+            if (!Directory.Exists(pathTemporary) & delete == false)
+            {
+                directory.Create();
+            }
+            if (Directory.Exists(pathTemporary) & delete == true)
+            {
+                directory.Delete(true);
+            }
+
         }
 
         private static Mutex InstanceCheckMutex;
@@ -211,14 +246,24 @@ namespace WPF_Traslate_Test
 
 
         }
-
-        private static readonly string PathOriginalScreenshot = @"mytest\origianal.PNG";
-        private static readonly string PathModifiedScreenshot = @"mytest\forbackgrund.PNG";
+        
+        public static readonly string PathOriginalScreenshot = $"{System.IO.Path.GetTempPath()}myAPP\\origianal.PNG";
+        public static readonly string PathModifiedScreenshot = $"{System.IO.Path.GetTempPath()}myAPP\\forbackgrund.PNG";
         public bool myHideWindow;
         private Task GetTranslate()
         {
             BitmapSource imageFromBuffer = GetBuferImage();
             if (imageFromBuffer == null) throw new ArgumentNullException("Буфер пустой", new Exception("imageFromBuffer"));
+
+            //using (MemoryStream ms = new MemoryStream())
+            //{
+            //    BitmapEncoder encoder = new PngBitmapEncoder();
+            //    encoder.Frames.Add(BitmapFrame.Create(imageFromBuffer));
+            //    encoder.Save(ms);
+            //    var path2 = ms.
+
+
+            //}
 
 
             using (FileStream createFileFromImageBuffer = new FileStream(PathOriginalScreenshot, FileMode.OpenOrCreate))
@@ -230,7 +275,7 @@ namespace WPF_Traslate_Test
             }
 
 
-            Tuple<ChromeDriver, WebDriverWait, Actions> configurateWebDriver = MyClassTranslateText.ConfigurateWebDrive(myHideWindow);
+            Tuple<ChromeDriver, WebDriverWait, Actions, ChromeOptions> configurateWebDriver = MyClassTranslateText.ConfigurateWebDrive(myHideWindow);
 
 
 
@@ -268,7 +313,16 @@ namespace WPF_Traslate_Test
             //object asdsd = this.Resources["back"];
             //Uri bbbb = new Uri("pack://application:,,,/mytest/forbackgrund.PNG");
             //string ccc = bbbb.AbsolutePath;
-            Background = new ImageBrush(new BitmapImage(new Uri("mytest/forbackgrund.PNG", UriKind.Relative)));
+
+            BitmapImage bi = new BitmapImage();
+            bi.BeginInit();
+            bi.UriSource = new Uri(PathModifiedScreenshot);
+            bi.CacheOption = BitmapCacheOption.OnLoad;
+            bi.EndInit();
+
+            //Background = new ImageBrush(new BitmapImage(new Uri(PathModifiedScreenshot)));
+            Background = new ImageBrush(bi);
+
             if (this.One.Visibility == Visibility.Hidden)
             {
                 this.Show();
@@ -292,11 +346,12 @@ namespace WPF_Traslate_Test
                 // ButtonTanslate.Visibility = Visibility.Hidden;
 
              
-
+                keyboardHook.Install();
             }
             catch (ArgumentNullException ex)
             {
                 ButtonTanslate.Content = $"{ex.Message}{Environment.NewLine}{ex.InnerException.Message}";
+                keyboardHook.Install();
                 return;
             }
             catch
@@ -359,14 +414,43 @@ namespace WPF_Traslate_Test
 
             if (KeyADown & LWINDown & LSHIFTDown)
             {
+
+                KeyADown = false;
+                LWINDown = false;
+                LSHIFTDown = false;
+                CapitalDown = false;
+
+
                 try
                 {
+                    
                     BitmapSource imageFromBuffer = GetBuferImage();
-                    if (imageFromBuffer == null) throw new ArgumentNullException("Буфер пустой", new Exception("imageFromBuffer"));
+                    
+                    //if (imageFromBuffer == null) throw new ArgumentNullException("Буфер пустой", new Exception("imageFromBuffer"));
+                    if(imageFromBuffer == null)
+                    {
+                        try
+                        {
+                            BitmapImage bi = new BitmapImage();
+                            bi.BeginInit();
+                            bi.UriSource = new Uri(PathModifiedScreenshot);
+                            bi.CacheOption = BitmapCacheOption.OnLoad;
+                            bi.EndInit();
+                            Background = new ImageBrush(bi);
+
+                        }
+                        catch (Exception)
+                        {
+
+                            throw new ArgumentNullException("Буфер пустой", new Exception("imageFromBuffer"));
+                        }
+                    }
 
 
                     this.One.Width = imageFromBuffer.Width;
                     this.One.Height = imageFromBuffer.Height;
+
+
 
                     Background = new ImageBrush(imageFromBuffer);
                     
@@ -394,6 +478,11 @@ namespace WPF_Traslate_Test
             }
             if (LWINDown & LSHIFTDown & CapitalDown)
             {
+                KeyADown = false;
+                LWINDown = false;
+                LSHIFTDown = false;
+                CapitalDown = false;
+                keyboardHook.Uninstall();
                 this.Hide();
                 Button_Click(new object(), new RoutedEventArgs());
                 //keyboardHook.KeyUp -= new KeyboardHook.KeyboardHookCallback(keyboardHook_KeyUp);
@@ -642,7 +731,7 @@ public class MyClassTranslateText
 
 
 
-    public static Tuple<ChromeDriver, WebDriverWait, Actions> ConfigurateWebDrive(bool hide = false)
+    public static Tuple<ChromeDriver, WebDriverWait, Actions, ChromeOptions> ConfigurateWebDrive(bool hide = false)
     {
 
         // ChromeDriverService chromeDriverService = ChromeDriverService.CreateDefaultService();//скрывает батник
@@ -655,7 +744,6 @@ public class MyClassTranslateText
         {
             option.AddArgument("--headless");
         }
-
         //option.AddArgument("--headless");  //скрывает окно
         ChromeDriver driver = new ChromeDriver(chromeDriverService, option);
         driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(15.00);
@@ -663,19 +751,21 @@ public class MyClassTranslateText
         driver.Manage().Timeouts().AsynchronousJavaScript = TimeSpan.FromSeconds(15.00);
         WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(30.00));
         Actions actions = new Actions(driver);
+        driver.Manage().Window.Maximize();
 
         //driver.Navigate().GoToUrl("chrome://settings/");
         //driver.ExecuteScript($"chrome.settingsPrivate.setDefaultZoom({zoom});");
 
-        return Tuple.Create(driver, wait, actions);
+        return Tuple.Create(driver, wait, actions, option);
     }
-    public static Task<string> Translate(string textForTranslate, ref Tuple<ChromeDriver, WebDriverWait, Actions> configurate)
+    public static Task<string> Translate(string textForTranslate, ref Tuple<ChromeDriver, WebDriverWait, Actions, ChromeOptions> configurate)
     {//  ((IJavaScriptExecutor)driver).ExecuteScript("document.body.style.transform='scale(0.5)';");
      // Tuple<ChromeDriver, WebDriverWait, Actions> config = configurate;
         ChromeDriver driver = configurate.Item1;
         WebDriverWait wait = configurate.Item2;
         Actions actions = configurate.Item3;
-
+        ChromeOptions option = configurate.Item4;
+        option.PageLoadStrategy = PageLoadStrategy.Default;//??
         driver.Navigate().GoToUrl(urlbody);
 
         IWebElement restagrget = driver.FindElement(By.XPath("html/body"));
@@ -749,7 +839,7 @@ public class MyClassTranslateText
 
     }
 
-    public static Task<string> ScanImageToText(ref Tuple<ChromeDriver, WebDriverWait, Actions> configurate)
+    public static Task<string> ScanImageToText(ref Tuple<ChromeDriver, WebDriverWait, Actions, ChromeOptions> configurate)
     {
         //ChromeOptions option = new ChromeOptions();
         //option.AddArguments("--window-size=1920,1080");
@@ -760,15 +850,18 @@ public class MyClassTranslateText
         //driver.Manage().Timeouts().AsynchronousJavaScript = TimeSpan.FromSeconds(15.00);
         //WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(30.00));
         //Actions actions = new Actions(driver);
-
+        //option.PageLoadStrategy = PageLoadStrategy.Eager;//??
         ChromeDriver driver = configurate.Item1;
         WebDriverWait wait = configurate.Item2;
         Actions actions = configurate.Item3;
-
+        ChromeOptions option = configurate.Item4;
+        option.PageLoadStrategy = PageLoadStrategy.Eager;//??
         TimeSpan ssddddwww = driver.Manage().Timeouts().ImplicitWait;
         driver.Navigate().GoToUrl("https://img2txt.com/ru");
-        // string filePath = @"C:\Users\user\source\repos\WPF_Traslate_Test\bin\Debug\net5.0-windows\mytest\origianal.PNG";
-        IWebElement langMenu = driver.FindElement(By.XPath("//*[@class='select2-selection__rendered']"));
+       // MessageBox.Show("OK");
+        
+         // string filePath = @"C:\Users\user\source\repos\WPF_Traslate_Test\bin\Debug\net5.0-windows\mytest\origianal.PNG";
+         IWebElement langMenu = driver.FindElement(By.XPath("//*[@class='select2-selection__rendered']"));
         IWebElement cooce = driver.FindElement(By.XPath("//*[@aria-label='dismiss cookie message']"));
         actions.MoveToElement(cooce);
         cooce.Click();
@@ -786,7 +879,7 @@ public class MyClassTranslateText
 
 
         IWebElement results = driver.FindElement(By.XPath("//*[@class='dz-hidden-input']"));
-        results.SendKeys(Path.GetFullPath("mytest/origianal.PNG"));
+        results.SendKeys(Path.GetFullPath(WPF_Traslate_Test.MainWindow.PathOriginalScreenshot));
         Thread.Sleep(440); // Ожидание
         IWebElement downoad = driver.FindElement(By.XPath("//*[@class='form-bottom']"));
         downoad.Click();

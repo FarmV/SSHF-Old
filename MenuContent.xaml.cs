@@ -92,7 +92,8 @@ namespace WPF_Traslate_Test
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             this.Close();
-            GlobalWindow._notifyIcon.Dispose();
+            
+            GlobalWindow.Dispose();
             App.Current.Shutdown();
 
 
