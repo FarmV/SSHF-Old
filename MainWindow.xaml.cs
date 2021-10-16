@@ -37,11 +37,14 @@ using System.IO.MemoryMappedFiles;
 
 [assembly: DisableDpiAwareness]
 
+
 namespace WPF_Traslate_Test
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
+    /// 
+
     public partial class MainWindow : Window, IDisposable
     {
         public void Dispose()
@@ -86,7 +89,7 @@ namespace WPF_Traslate_Test
             }
         }
         public MainWindow()
-        {
+        {//todo Найти прогрессбар скчаивания хромдрайвера
             
             InitializeComponent();           
             if (!SingleProgramCheck())
@@ -101,6 +104,7 @@ namespace WPF_Traslate_Test
             CheckTempFiles();
             ButtonTanslate.Visibility = Visibility.Hidden;
             this.Visibility = Visibility.Hidden;
+
             // this.One.Background = new ImageBrush(new BitmapImage(new Uri("mytest/origianal.PNG", UriKind.Relative)));
         }
 
@@ -119,7 +123,7 @@ namespace WPF_Traslate_Test
             }
             if (Directory.Exists(pathTemporary) & delete == true)
             {
-                directory.Delete(true);
+                directory.Delete(true); //todo Изменить алгоритм очистки с изменнением папкки умолчания хромдрайвера
             }
 
         }
@@ -246,7 +250,19 @@ namespace WPF_Traslate_Test
 
 
         }
-        
+
+        private async void One_Insert_Drop(object sender, DragEventArgs e)
+        {
+
+            //object file = e.Data.GetData(DataFormats.FileDrop);
+            //bool file2 = e.Data.GetDataPresent(DataFormats.FileDrop);
+            //string[] file3 = e.Data.GetFormats();
+
+            //DragDrop.DoDragDrop(this, new DataObject(DataFormats.FileDrop, MainWindow.PathOriginalScreenshot), DragDropEffects.Copy);
+            ////await Task.Delay(100);
+            
+        }
+
         public static readonly string PathOriginalScreenshot = $"{System.IO.Path.GetTempPath()}myAPP\\origianal.PNG";
         public static readonly string PathModifiedScreenshot = $"{System.IO.Path.GetTempPath()}myAPP\\forbackgrund.PNG";
         public bool myHideWindow;
@@ -427,16 +443,23 @@ namespace WPF_Traslate_Test
                     BitmapSource imageFromBuffer = GetBuferImage();
                     
                     //if (imageFromBuffer == null) throw new ArgumentNullException("Буфер пустой", new Exception("imageFromBuffer"));
-                    if(imageFromBuffer == null)
+                    if(imageFromBuffer != null)
                     {
                         try
                         {
-                            BitmapImage bi = new BitmapImage();
-                            bi.BeginInit();
-                            bi.UriSource = new Uri(PathModifiedScreenshot);
-                            bi.CacheOption = BitmapCacheOption.OnLoad;
-                            bi.EndInit();
-                            Background = new ImageBrush(bi);
+                            //BitmapImage bi = new BitmapImage();
+                            //bi.BeginInit();
+                            //bi.UriSource = new Uri(PathModifiedScreenshot);
+                            //bi.CacheOption = BitmapCacheOption.OnLoad;
+                            //bi.EndInit();
+                            //Background = new ImageBrush(bi);
+                            using (FileStream createFileFromImageBuffer = new FileStream(PathOriginalScreenshot, FileMode.OpenOrCreate))
+                            {
+                                BitmapEncoder encoder = new PngBitmapEncoder();
+                                encoder.Frames.Add(BitmapFrame.Create(imageFromBuffer));
+                                encoder.Save(createFileFromImageBuffer);
+
+                            }
 
                         }
                         catch (Exception)
@@ -483,6 +506,10 @@ namespace WPF_Traslate_Test
                 LSHIFTDown = false;
                 CapitalDown = false;
                 keyboardHook.Uninstall();
+                if (System.IO.File.Exists(MainWindow.PathModifiedScreenshot))
+                {
+                    System.IO.File.Delete(MainWindow.PathModifiedScreenshot);
+                }
                 this.Hide();
                 Button_Click(new object(), new RoutedEventArgs());
                 //keyboardHook.KeyUp -= new KeyboardHook.KeyboardHookCallback(keyboardHook_KeyUp);
@@ -673,7 +700,65 @@ namespace WPF_Traslate_Test
             //CancellationToken ct = cts.Token;
             Dispatcher.Invoke(new Action(RefreshWindow));
         }
+
+        private void One_PreviewDrop(object sender, DragEventArgs e)
+        {
+            //string file = e.Data.GetData(DataFormats.FileDrop).ToString();
+           // DragDrop.DoDragDrop(this, new DataObject(DataFormats.FileDrop, MainWindow.PathOriginalScreenshot),DragDropEffects.Copy);
+        }
+
+        private void One_PreviewDragLeave(object sender, DragEventArgs e)
+        {
+            //if (e.Data.GetDataPresent("FileDrop", false))
+            //{
+            //    string[] paths = (string[])(e.Data.GetData("FileDrop", false));
+            //    foreach (string path in paths)
+            //    {
+            //        string path12 = path;
+            //    }
+            //}
+            //string file = e.Data.GetData(DataFormats.FileDrop).ToString();
+
+            //  DragDrop.DoDragDrop(this, new DataObject(DataFormats.FileDrop, MainWindow.PathOriginalScreenshot),DragDropEffects.Copy);
+        }
+
+        private void One_PreviewMouseMove(object sender, MouseEventArgs e)
+        {
+            if (e.LeftButton == MouseButtonState.Pressed)
+            {
+                if (e.Source != null)
+                {
+                    // var a =  DragDrop.DoDragDrop(this, new DataObject(DataFormats.FileDrop, MainWindow.PathOriginalScreenshot), DragDropEffects.Copy);
+                    //string[] filePaths = (string[])e.Data.GetData(DataFormats.FileDrop);
+                    //DragDrop.DoDragDrop(this, new DataObject().GetData(DataFormats.FileDrop), DragDropEffects.Copy);
+
+
+
+                    // DragDrop.DoDragDrop(this, new DataObject(DataFormats.FileDrop,File.Create("C:\\Users\\user\\Desktop\\15\\1.png")), DragDropEffects.Copy);
+                    string[] mas = new string[] { MainWindow.PathOriginalScreenshot };
+                    var dataObject = new DataObject(DataFormats.FileDrop, mas);
+                    dataObject.SetData(DataFormats.StringFormat, dataObject);
+                    
+                    DragDrop.DoDragDrop(this, dataObject, DragDropEffects.Copy);
+                    this.Topmost = true;
+
+
+                }
+            }
+        }
+        private void Form1_Drag(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent("FileDrop",false))
+            {
+                string[] paths = (string[])(e.Data.GetData("FileDrop", false));
+                foreach (string path in paths)
+                {
+                    string path12 = path;
+                }
+            }
+        }
     }
+   
 }
 class MyTest
 {

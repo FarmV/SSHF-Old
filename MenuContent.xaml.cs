@@ -107,6 +107,19 @@ namespace WPF_Traslate_Test
                 return;
             }
 
+            if (System.IO.File.Exists(MainWindow.PathModifiedScreenshot))
+            {
+                ImageBrush ib = new ImageBrush();
+                BitmapImage source = new BitmapImage();
+                source.BeginInit();
+                source.UriSource = new Uri(MainWindow.PathModifiedScreenshot);
+                source.CacheOption = BitmapCacheOption.OnLoad;
+                source.EndInit();
+                GlobalWindow.Width = source.PixelWidth;
+                GlobalWindow.Height= source.PixelHeight;
+                ib.ImageSource = source;               
+                GlobalWindow.One.Background = ib;
+            }
             GlobalWindow.One.Show();
             GlobalWindow.One.Visibility = Visibility.Visible;
             GlobalWindow.MenuIsOpen = false;
@@ -132,6 +145,10 @@ namespace WPF_Traslate_Test
             GlobalWindow.One.Height = GlobalWindow.ButtonTanslate.ActualHeight;
             GlobalWindow.One.Background = Brushes.Transparent;
             GlobalWindow.Hide();
+            if (System.IO.File.Exists(MainWindow.PathModifiedScreenshot))
+            {
+                System.IO.File.Delete(MainWindow.PathModifiedScreenshot);
+            }
 
 
         }
@@ -142,7 +159,7 @@ namespace WPF_Traslate_Test
 
         }
         
-        private void ShowPocces(object sender, RoutedEventArgs e)
+        private void ShowPocces(object sender, RoutedEventArgs e) //todo Добавить прогрессбар при скрытии процесса
         {
             if (GlobalWindow.myHideWindow)
             {

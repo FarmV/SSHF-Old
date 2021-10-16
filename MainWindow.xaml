@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:WPF_Traslate_Test"
         
        
-        mc:Ignorable="d" Height="50" Width="170" WindowStartupLocation="CenterScreen" WindowState="Normal" WindowStyle="None" AllowsTransparency="True" Visibility="Visible" MouseDoubleClick="MyDoubleFormClick" Loaded="LoadMyWindow" Closing="NotClose" MouseEnter="EnterForm" MouseLeave="LevaeForm">
+        mc:Ignorable="d" Height="50" Width="170" WindowStartupLocation="CenterScreen" WindowState="Normal" WindowStyle="None" AllowsTransparency="True" Visibility="Visible" MouseDoubleClick="MyDoubleFormClick" Loaded="LoadMyWindow" Closing="NotClose" MouseEnter="EnterForm" MouseLeave="LevaeForm" DragLeave="One_Insert_Drop" PreviewDrop="One_PreviewDrop" AllowDrop="True" PreviewDragLeave="One_PreviewDragLeave" PreviewMouseMove="One_PreviewMouseMove">
         
     <Window.Resources>
         <Style TargetType="TextBlock" x:Key="TitleText"></Style>
