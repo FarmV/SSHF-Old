@@ -251,7 +251,7 @@ namespace WPF_Traslate_Test
 
         }
 
-        private async void One_Insert_Drop(object sender, DragEventArgs e)
+        private void One_Insert_Drop(object sender, DragEventArgs e)
         {
 
             //object file = e.Data.GetData(DataFormats.FileDrop);
@@ -263,8 +263,8 @@ namespace WPF_Traslate_Test
             
         }
 
-        public static readonly string PathOriginalScreenshot = $"{System.IO.Path.GetTempPath()}myAPP\\origianal.PNG";
-        public static readonly string PathModifiedScreenshot = $"{System.IO.Path.GetTempPath()}myAPP\\forbackgrund.PNG";
+        public static readonly string PathOriginalScreenshot = $"{System.IO.Path.GetTempPath()}myAPP\\Original.png";
+        public static readonly string PathModifiedScreenshot = $"{System.IO.Path.GetTempPath()}myAPP\\forbackground.png";
         public bool myHideWindow;
         private Task GetTranslate()
         {
