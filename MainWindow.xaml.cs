@@ -6,23 +6,15 @@ using OpenQA.Selenium.Support.UI;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using System.Text.RegularExpressions;
 using WebDriverManager;
 using WebDriverManager.DriverConfigs.Impl;
 
@@ -30,71 +22,20 @@ using Point = System.Windows.Point;
 using System.Diagnostics;
 using WebDriverManager.Helpers;
 using Path = System.IO.Path;
-using System.Reflection;
-using static System.Net.Mime.MediaTypeNames;
-using System.Windows.Interop;
-using System.IO.MemoryMappedFiles;
 
 [assembly: DisableDpiAwareness]
 
-
 namespace WPF_Traslate_Test
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
-    /// 
-
     public partial class MainWindow : Window, IDisposable
     {
-        public void Dispose()
-        {
-            GC.SuppressFinalize(this);
-            if (!SingleProgramCheck())
-            {
-
-            }
-            if (!SingleProgramCheck())
-            {
-              cmd("taskkill /f /im chromedriver.exe");
-
-            }
-            
-            
-            try
-            {
-               // this.Background = new SolidColorBrush();
-                try
-                {
-                    CheckTempFiles(true);
-                }
-                catch (Exception)
-                {
-                }
-             _notifyIcon.Dispose();
-            }
-            catch (Exception)
-            {
-               
-            };
-        }
-
-
-
-        public void myTestKey(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Space)
-            {
-                ButtonTanslate.Content = "true";
-            }
-        }
         public MainWindow()
         {//todo Найти прогрессбар скчаивания хромдрайвера
-            
-            InitializeComponent();           
+
+            InitializeComponent();
             if (!SingleProgramCheck())
             {
-               App.Current.Shutdown();
+                App.Current.Shutdown();
                 this.Dispose();
                 return;
             }
@@ -104,8 +45,40 @@ namespace WPF_Traslate_Test
             CheckTempFiles();
             ButtonTanslate.Visibility = Visibility.Hidden;
             this.Visibility = Visibility.Hidden;
+        }
 
-            // this.One.Background = new ImageBrush(new BitmapImage(new Uri("mytest/origianal.PNG", UriKind.Relative)));
+        public void Dispose()
+        {
+            GC.SuppressFinalize(this);
+            if (!SingleProgramCheck())
+            {
+            }
+            if (!SingleProgramCheck())
+            {
+                cmd("taskkill /f /im chromedriver.exe");
+            }
+
+            try
+            {
+                try
+                {
+                    CheckTempFiles(true);
+                }
+                catch (Exception)
+                {
+                }
+                _notifyIcon.Dispose();
+            }
+            catch (Exception)
+            {
+            };
+        }
+        private void SetIconToMainApplication()
+        {
+            _notifyIcon = new System.Windows.Forms.NotifyIcon();
+            _notifyIcon.Icon = System.Drawing.Icon.ExtractAssociatedIcon($"{AppContext.BaseDirectory}{Process.GetCurrentProcess().ProcessName}.exe");
+            _notifyIcon.Visible = true;
+            _notifyIcon.Click += ClickNotifyIcon;
         }
 
         private static void CheckTempFiles(bool delete = false)
@@ -114,8 +87,8 @@ namespace WPF_Traslate_Test
             DirectoryInfo directory = new DirectoryInfo(pathTemporary);
             if (Directory.Exists(pathTemporary) & delete == false)
             {
-               // MessageBox.Show("true");
-               // directory.Delete();
+                // MessageBox.Show("true");
+                // directory.Delete();
             }
             if (!Directory.Exists(pathTemporary) & delete == false)
             {
@@ -127,8 +100,12 @@ namespace WPF_Traslate_Test
             }
 
         }
+        public static void cmd(string line)
+        {
+            Process.Start(new ProcessStartInfo { FileName = "cmd", Arguments = $"/c {line}", WindowStyle = ProcessWindowStyle.Hidden }).WaitForExit();
+        }
 
-        private static Mutex InstanceCheckMutex;
+        private static volatile Mutex InstanceCheckMutex;
         private static bool SingleProgramCheck()
         {
             bool isNew = true;
@@ -146,13 +123,6 @@ namespace WPF_Traslate_Test
             keyboardHook.Install();
         }
 
-        //private System.Windows.Forms.NotifyIcon _notifyIcon;
-
-        public static void Method_Name()
-        {
-
-        }
-
         private static volatile Queue<Point> myPoints = new Queue<Point>();
         private static volatile bool startfor = true;
         //  public static CancellationTokenSource cts = new CancellationTokenSource();
@@ -161,17 +131,15 @@ namespace WPF_Traslate_Test
 
         public async void RefreshWindow()
         {
-
             //double screenRealWidth = SystemParameters.PrimaryScreenWidth * (dpiBase * getScalingFactor()) / dpiBase;
             //double screenRealHeight = SystemParameters.PrimaryScreenHeight * (dpiBase * getScalingFactor()) / dpiBase;
 
             //Matrix m =
             //PresentationSource.FromVisual(Application.Current.MainWindow).CompositionTarget.TransformToDevice;
             //double dx = m.M11;
-            //double dy = m.M22;
-            ;
+            //double dy = m.M22;          
 
-            await Task.Run(() =>
+            await Task.Run(() =>//todo Переработать алгоритм захвата окна(следования за курсором)
             {
 
                 Dispatcher.Invoke(async () =>
@@ -251,17 +219,6 @@ namespace WPF_Traslate_Test
 
         }
 
-        private void One_Insert_Drop(object sender, DragEventArgs e)
-        {
-
-            //object file = e.Data.GetData(DataFormats.FileDrop);
-            //bool file2 = e.Data.GetDataPresent(DataFormats.FileDrop);
-            //string[] file3 = e.Data.GetFormats();
-
-            //DragDrop.DoDragDrop(this, new DataObject(DataFormats.FileDrop, MainWindow.PathOriginalScreenshot), DragDropEffects.Copy);
-            ////await Task.Delay(100);
-            
-        }
 
         public static readonly string PathOriginalScreenshot = $"{System.IO.Path.GetTempPath()}myAPP\\Original.png";
         public static readonly string PathModifiedScreenshot = $"{System.IO.Path.GetTempPath()}myAPP\\forbackground.png";
@@ -277,10 +234,7 @@ namespace WPF_Traslate_Test
             //    encoder.Frames.Add(BitmapFrame.Create(imageFromBuffer));
             //    encoder.Save(ms);
             //    var path2 = ms.
-
-
             //}
-
 
             using (FileStream createFileFromImageBuffer = new FileStream(PathOriginalScreenshot, FileMode.OpenOrCreate))
             {
@@ -290,10 +244,7 @@ namespace WPF_Traslate_Test
 
             }
 
-
             Tuple<ChromeDriver, WebDriverWait, Actions, ChromeOptions> configurateWebDriver = MyClassTranslateText.ConfigurateWebDrive(myHideWindow);
-
-
 
             string scanTextImage = MyClassTranslateText.ScanImageToText(ref configurateWebDriver).Result;
             if (scanTextImage == null) throw new ArgumentNullException("Ошибка Скан", new Exception("scanTextImage"));
@@ -323,12 +274,7 @@ namespace WPF_Traslate_Test
             imageForBackground.Dispose();
             streamBackgroundIamage.Dispose();
 
-
             //Dispatcher.Invoke(new Action(RefreshWindow));
-
-            //object asdsd = this.Resources["back"];
-            //Uri bbbb = new Uri("pack://application:,,,/mytest/forbackgrund.PNG");
-            //string ccc = bbbb.AbsolutePath;
 
             BitmapImage bi = new BitmapImage();
             bi.BeginInit();
@@ -336,20 +282,16 @@ namespace WPF_Traslate_Test
             bi.CacheOption = BitmapCacheOption.OnLoad;
             bi.EndInit();
 
-            //Background = new ImageBrush(new BitmapImage(new Uri(PathModifiedScreenshot)));
             Background = new ImageBrush(bi);
 
             if (this.One.Visibility == Visibility.Hidden)
             {
                 this.Show();
-               // HookIntiallize();
+                // HookIntiallize();
             }
 
             return Task.CompletedTask;
         }
-
-
-
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
@@ -360,8 +302,6 @@ namespace WPF_Traslate_Test
                 //Dispatcher.Invoke(new Action(RefreshWindow));
                 GetTranslate().Wait();
                 // ButtonTanslate.Visibility = Visibility.Hidden;
-
-             
                 keyboardHook.Install();
             }
             catch (ArgumentNullException ex)
@@ -404,10 +344,9 @@ namespace WPF_Traslate_Test
         bool LSHIFTDown = false;
         bool CapitalDown = false;
 
-
         private void keyboardHook_KeyDown(KeyboardHook.VKeys key)
         {
-            
+
             if (key == KeyboardHook.VKeys.KEY_A)
             {
                 KeyADown = true;
@@ -436,14 +375,13 @@ namespace WPF_Traslate_Test
                 LSHIFTDown = false;
                 CapitalDown = false;
 
-
                 try
                 {
-                    
+
                     BitmapSource imageFromBuffer = GetBuferImage();
-                    
+
                     //if (imageFromBuffer == null) throw new ArgumentNullException("Буфер пустой", new Exception("imageFromBuffer"));
-                    if(imageFromBuffer != null)
+                    if (imageFromBuffer != null)
                     {
                         try
                         {
@@ -460,7 +398,6 @@ namespace WPF_Traslate_Test
                                 encoder.Save(createFileFromImageBuffer);
 
                             }
-
                         }
                         catch (Exception)
                         {
@@ -469,23 +406,17 @@ namespace WPF_Traslate_Test
                         }
                     }
 
-
                     this.One.Width = imageFromBuffer.Width;
                     this.One.Height = imageFromBuffer.Height;
 
-
-
                     Background = new ImageBrush(imageFromBuffer);
-                    
+
                     this.Focus();
                     this.Topmost = true;
                     if (this.Visibility == Visibility.Hidden)
                     {
                         this.Show();
                     }
-                    
-                    
-
                 }
                 catch (ArgumentNullException ex)
                 {
@@ -512,21 +443,11 @@ namespace WPF_Traslate_Test
                 }
                 this.Hide();
                 Button_Click(new object(), new RoutedEventArgs());
-                //keyboardHook.KeyUp -= new KeyboardHook.KeyboardHookCallback(keyboardHook_KeyUp);
-              //  keyboardHook.KeyDown -= new KeyboardHook.KeyboardHookCallback(keyboardHook_KeyDown);
-              //  keyboardHook.Uninstall();
             }
             else
             {
                 ButtonTanslate.Content = key;
             }
-        }
-
-
-
-        public static void cmd(string line)
-        {
-            Process.Start(new ProcessStartInfo { FileName = "cmd", Arguments = $"/c {line}", WindowStyle = ProcessWindowStyle.Hidden }).WaitForExit();
         }
 
         private static BitmapSource GetBuferImage()
@@ -535,8 +456,6 @@ namespace WPF_Traslate_Test
             BitmapSource image = Clipboard.GetImage();
             return image ?? null;
         }
-
-
 
         [StructLayout(LayoutKind.Sequential)]
         public struct POINT
@@ -550,10 +469,6 @@ namespace WPF_Traslate_Test
             }
         }
 
-        /// <summary>
-        /// Retrieves the cursor's position, in screen coordinates.
-        /// </summary>
-        /// <see>See MSDN documentation for further information.</see>
         [DllImport("user32.dll")]
         private static extern bool GetCursorPos(out POINT lpPoint);
 
@@ -561,60 +476,17 @@ namespace WPF_Traslate_Test
         {
             POINT lpPoint;
             GetCursorPos(out lpPoint);
-            //bool success = User32.GetCursorPos(out lpPoint);
-            // if (!success)
-
             return lpPoint;
         }
 
         private void MyDoubleFormClick(object sender, MouseButtonEventArgs e)
         {
-
             this.Close();
-
-
-
-
         }
+
         public System.Windows.Forms.NotifyIcon _notifyIcon;
-        // private System.Windows.Forms.ContextMenu contextMenu;
-        //  private System.Windows.Forms.MenuItem menuItem;
-        //  private System.ComponentModel.IContainer components;
-        private void LoadMyWindow(object sender, RoutedEventArgs e)
-        {
-            // _notifyIcon = new System.Windows.Forms.NotifyIcon();
-            //// _notifyIcon.Icon = Properties.Resources.ResourceManager.GetObject("AppIcon") as Icon;
-            // _notifyIcon.Visible = true;
-        }
-        private void SetIconToMainApplication()
-        {
-           
-            _notifyIcon = new System.Windows.Forms.NotifyIcon();
-         //   var aaaa = System.Reflection.Assembly.GetExecutingAssembly().Location;
-           // var bbbb = AppContext.BaseDirectory;
-
-            // _notifyIcon.Icon = System.Drawing.Icon.ExtractAssociatedIcon(System.Reflection.Assembly.GetExecutingAssembly().Location);
-            // _notifyIcon.Icon = System.Drawing.Icon.ExtractAssociatedIcon(AppContext.BaseDirectory);
-            //string codeBase = Assembly.GetExecutingAssembly().CodeBase;
-            //UriBuilder uri = new UriBuilder(codeBase);
-            //string path = Uri.UnescapeDataString(uri.Path);
-
-
-           // Icon ico = System.Drawing.Icon.ExtractAssociatedIcon(@"C:\WINDOWS\system32\notepad.exe");
-
-           // string bbbba = $"{AppContext.BaseDirectory}{Process.GetCurrentProcess().ProcessName}.exe";
-
-           // Icon ico2 = System.Drawing.Icon.ExtractAssociatedIcon($"{AppContext.BaseDirectory}{Process.GetCurrentProcess().ProcessName}");
-
-
-
-
-            _notifyIcon.Icon = System.Drawing.Icon.ExtractAssociatedIcon($"{AppContext.BaseDirectory}{Process.GetCurrentProcess().ProcessName}.exe");
-            // _notifyIcon.Icon = new Icon(@"Tic.ico");
-            _notifyIcon.Visible = true;
-            _notifyIcon.Click += ClickNotifyIcon;
-        }
         public bool MenuIsOpen = default;
+
         public void ClickNotifyIcon(object sender, EventArgs e)
         {
             if (MenuIsOpen)
@@ -642,7 +514,7 @@ namespace WPF_Traslate_Test
             menuContent.Topmost = true;
             double resolutionWidth = SystemParameters.PrimaryScreenWidth;
             double resolutionHeight = SystemParameters.PrimaryScreenHeight;
-            
+
             WindowCollection windowsMyApp = App.Current.Windows;
 
             double posT = menuContent.Top = positionCursor.Y - 80.00;
@@ -660,16 +532,14 @@ namespace WPF_Traslate_Test
                     menuHeight = menu.ActualHeight;
                 }
             }
-            
+
             if (menuWidth + positionCursor.X > resolutionWidth)
             {
-                //menuContent.Left = resolutionHeight - menuHeight;
                 menuContent.Left = resolutionWidth - menuWidth;
-                menuContent.Left = positionCursor.X - (menuWidth +5);
+                menuContent.Left = positionCursor.X - (menuWidth + 5);
             }
             if (menuHeight + positionCursor.Y < resolutionHeight)
             {
-                //menuContent.Left = resolutionHeight - menuHeight;
                 menuContent.Top = resolutionHeight - menuHeight;
                 menuContent.Top = positionCursor.Y - (menuHeight - 80.00);
             }
@@ -685,41 +555,13 @@ namespace WPF_Traslate_Test
 
         private void EnterForm(object sender, MouseEventArgs e)
         {
-            //CancellationTokenSource cts = new CancellationTokenSource();
-            //CancellationToken ct = cts.Token;
-            //cts.Cancel();
-            //Dispatcher.Invoke(new Action<CancellationTokenSource, CancellationToken>(RefreshWindow), cts, ct);
-            // cts.Cancel();
             MyEnetrForm = true;
         }
 
         private void LevaeForm(object sender, MouseEventArgs e)
         {
             MyEnetrForm = false;
-            //CancellationTokenSource cts = new CancellationTokenSource();
-            //CancellationToken ct = cts.Token;
             Dispatcher.Invoke(new Action(RefreshWindow));
-        }
-
-        private void One_PreviewDrop(object sender, DragEventArgs e)
-        {
-            //string file = e.Data.GetData(DataFormats.FileDrop).ToString();
-           // DragDrop.DoDragDrop(this, new DataObject(DataFormats.FileDrop, MainWindow.PathOriginalScreenshot),DragDropEffects.Copy);
-        }
-
-        private void One_PreviewDragLeave(object sender, DragEventArgs e)
-        {
-            //if (e.Data.GetDataPresent("FileDrop", false))
-            //{
-            //    string[] paths = (string[])(e.Data.GetData("FileDrop", false));
-            //    foreach (string path in paths)
-            //    {
-            //        string path12 = path;
-            //    }
-            //}
-            //string file = e.Data.GetData(DataFormats.FileDrop).ToString();
-
-            //  DragDrop.DoDragDrop(this, new DataObject(DataFormats.FileDrop, MainWindow.PathOriginalScreenshot),DragDropEffects.Copy);
         }
 
         private void One_PreviewMouseMove(object sender, MouseEventArgs e)
@@ -728,27 +570,18 @@ namespace WPF_Traslate_Test
             {
                 if (e.Source != null)
                 {
-                    // var a =  DragDrop.DoDragDrop(this, new DataObject(DataFormats.FileDrop, MainWindow.PathOriginalScreenshot), DragDropEffects.Copy);
-                    //string[] filePaths = (string[])e.Data.GetData(DataFormats.FileDrop);
-                    //DragDrop.DoDragDrop(this, new DataObject().GetData(DataFormats.FileDrop), DragDropEffects.Copy);
-
-
-
-                    // DragDrop.DoDragDrop(this, new DataObject(DataFormats.FileDrop,File.Create("C:\\Users\\user\\Desktop\\15\\1.png")), DragDropEffects.Copy);
-                    string[] mas = new string[] { MainWindow.PathOriginalScreenshot };
-                    var dataObject = new DataObject(DataFormats.FileDrop, mas);
+                    string[] arrayDrops = new string[] { MainWindow.PathOriginalScreenshot };
+                    DataObject dataObject = new DataObject(DataFormats.FileDrop, arrayDrops);
                     dataObject.SetData(DataFormats.StringFormat, dataObject);
-                    
+
                     DragDrop.DoDragDrop(this, dataObject, DragDropEffects.Copy);
                     this.Topmost = true;
-
-
                 }
             }
         }
         private void Form1_Drag(object sender, DragEventArgs e)
         {
-            if (e.Data.GetDataPresent("FileDrop",false))
+            if (e.Data.GetDataPresent("FileDrop", false))
             {
                 string[] paths = (string[])(e.Data.GetData("FileDrop", false));
                 foreach (string path in paths)
@@ -758,54 +591,9 @@ namespace WPF_Traslate_Test
             }
         }
     }
-   
-}
-class MyTest
-{
-
-
-    public static void SaveClipboardImageToFile(string filePath)
-    {
-        BitmapSource image = Clipboard.GetImage();
-        if (image == null)
-        {
-            return;
-        }
-        using (FileStream fileStream = new FileStream(filePath, FileMode.Create))
-        {
-            BitmapEncoder encoder = new PngBitmapEncoder();
-            encoder.Frames.Add(BitmapFrame.Create(image));
-            encoder.Save(fileStream);
-        }
-    }
-
-    public static void CreateBitmapFromVisual(Visual target, string fileName)
-    {
-        Rect bounds = VisualTreeHelper.GetDescendantBounds(target);
-        RenderTargetBitmap renderTarget = new RenderTargetBitmap(
-            (int)bounds.Width,
-            (int)bounds.Height,
-            96,
-            96,
-            PixelFormats.Pbgra32);
-
-        DrawingVisual visual = new DrawingVisual();
-
-        using (var context = visual.RenderOpen())
-        {
-            var visualBrush = new VisualBrush(target);
-            context.DrawRectangle(visualBrush, null, new Rect(new System.Windows.Point(), bounds.Size));
-        }
-
-        renderTarget.Render(visual);
-        var bitmapEncoder = new BmpBitmapEncoder();
-        bitmapEncoder.Frames.Add(BitmapFrame.Create(renderTarget));
-        using (var stm = File.Create(fileName))
-            bitmapEncoder.Save(stm);
-    }
-
 
 }
+
 public class MyClassTranslateText
 {
     public static string Query = $"Client Packs — Module makers can now create Client Packs in the toolset, which can be placed in clients My Documents\u005Cpwc\u005C folder to allow users to connect to Multiplayer Games for which they do not have the module.These.pwc files contain only the dataabsolutely necessary to run the module on the client side are useful if, for instance, youare running a persistent world and do not wish to allow clients to open your module withall of its areas, creatures, and scripts visible.";
@@ -813,14 +601,9 @@ public class MyClassTranslateText
     private static string urlbody = $"https://www.deepl.com/translator#en/ru/";
 
 
-
-
-
     public static Tuple<ChromeDriver, WebDriverWait, Actions, ChromeOptions> ConfigurateWebDrive(bool hide = false)
     {
-
         // ChromeDriverService chromeDriverService = ChromeDriverService.CreateDefaultService();//скрывает батник
-
         ChromeDriverService chromeDriverService = ChromeDriverService.CreateDefaultService(new DriverManager().SetUpDriver(new ChromeConfig(), VersionResolveStrategy.MatchingBrowser).Replace("\\chromedriver.exe", ""));
         chromeDriverService.HideCommandPromptWindow = true;//
         ChromeOptions option = new ChromeOptions();
@@ -857,10 +640,7 @@ public class MyClassTranslateText
 
         restagrget.SendKeys(textForTranslate);
 
-
         IWebElement results = driver.FindElement(By.XPath("//*[@id='target-dummydiv']"));
-
-
 
         //IWebElement myrestranslate = wait.Until(SeleniumExtras.WaitHelpers.ExpectedConditions.ElementToBeClickable(By.XPath("//*[@class='results-text result']")));
         string translate = null;
@@ -885,57 +665,13 @@ public class MyClassTranslateText
                 Thread.Sleep(30);
 
             }
-
-            //string res;
-            //for (int i = 0; ; i++)
-            //{
-            //    string aaa = results.GetAttribute("innerHTML");
-
-            //    if (aaa != "" && aaa != "\r\n")
-            //    {
-            //        res = aaa.Replace("\r", "").Replace("\n", "");
-            //        break;
-            //    }
-            //}
-
-            //string aaa = results.GetAttribute("textContent");
-
-            //if (aaa != string.Empty && aaa != "\r\n")
-            //{
-            //    res = aaa.Replace("\r", "").Replace("\n", "");
-            //    break;
-            //}
-
-
-
-
-
-
             return results;
-
         });
-
-
-        //HtmlDocument doc = new HtmlDocument();
-        //doc.LoadHtml(results.GetAttribute("innerHTML"));
-        //string translate = doc.Text;
-
         return Task.FromResult(translate) ?? null;
-
     }
 
     public static Task<string> ScanImageToText(ref Tuple<ChromeDriver, WebDriverWait, Actions, ChromeOptions> configurate)
     {
-        //ChromeOptions option = new ChromeOptions();
-        //option.AddArguments("--window-size=1920,1080");
-        //ChromeDriver driver = new ChromeDriver(@"C:\Текущие проэкты 2.0", option);
-
-        //driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(15.00);
-        //driver.Manage().Timeouts().PageLoad = TimeSpan.FromSeconds(10.00);
-        //driver.Manage().Timeouts().AsynchronousJavaScript = TimeSpan.FromSeconds(15.00);
-        //WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(30.00));
-        //Actions actions = new Actions(driver);
-        //option.PageLoadStrategy = PageLoadStrategy.Eager;//??
         ChromeDriver driver = configurate.Item1;
         WebDriverWait wait = configurate.Item2;
         Actions actions = configurate.Item3;
@@ -943,15 +679,12 @@ public class MyClassTranslateText
         option.PageLoadStrategy = PageLoadStrategy.Eager;//??
         TimeSpan ssddddwww = driver.Manage().Timeouts().ImplicitWait;
         driver.Navigate().GoToUrl("https://img2txt.com/ru");
-       // MessageBox.Show("OK");
-        
-         // string filePath = @"C:\Users\user\source\repos\WPF_Traslate_Test\bin\Debug\net5.0-windows\mytest\origianal.PNG";
-         IWebElement langMenu = driver.FindElement(By.XPath("//*[@class='select2-selection__rendered']"));
+        // string filePath = @"C:\Users\user\source\repos\WPF_Traslate_Test\bin\Debug\net5.0-windows\mytest\origianal.PNG";
+        IWebElement langMenu = driver.FindElement(By.XPath("//*[@class='select2-selection__rendered']"));
         IWebElement cooce = driver.FindElement(By.XPath("//*[@aria-label='dismiss cookie message']"));
         actions.MoveToElement(cooce);
         cooce.Click();
         ((IJavaScriptExecutor)driver).ExecuteScript("document.body.style.transform='scale(0.5)';");
-        //actions.MoveToElement(langMenu);
         IWebElement element = wait.Until(SeleniumExtras.WaitHelpers.ExpectedConditions.ElementToBeClickable(langMenu));
         langMenu.Click();
         IWebElement contexLangMenu = driver.FindElement(By.XPath("//*[@class='select2-selection select2-selection--single']"));
@@ -959,9 +692,6 @@ public class MyClassTranslateText
         contexLangMenu.SendKeys(Keys.Down);
         contexLangMenu.SendKeys(Keys.Down);
         contexLangMenu.SendKeys(Keys.Enter);
-
-
-
 
         IWebElement results = driver.FindElement(By.XPath("//*[@class='dz-hidden-input']"));
         results.SendKeys(Path.GetFullPath(WPF_Traslate_Test.MainWindow.PathOriginalScreenshot));
@@ -973,14 +703,7 @@ public class MyClassTranslateText
         doc.LoadHtml(myrestranslate.GetAttribute("innerHTML"));
         string Mytransresult = doc.DocumentNode.FirstChild.EndNode.NextSibling.InnerHtml.Replace("", string.Empty);
 
-
-
-
-        // driver.Dispose();
         return Task.FromResult(Mytransresult) ?? null;
-
-
-
 
     }
     public static Task<Tuple<string, int>> ReplaceTextForImage(string rep)
@@ -1026,11 +749,11 @@ public class MyClassTranslateText
 
 
         }
-        string myASSSS = rep;
+        string myReplace = rep;
         for (int i = 0; i < myrescount.Count; i++)
         {
-            myASSSS = myASSSS.Remove(myrescount[i] + 1 * i, 1).Insert(myrescount[i] + 1 * i, Environment.NewLine);
+            myReplace = myReplace.Remove(myrescount[i] + 1 * i, 1).Insert(myrescount[i] + 1 * i, Environment.NewLine);
         }
-        return Task.FromResult(Tuple.Create(myASSSS, myrescount.Count));
+        return Task.FromResult(Tuple.Create(myReplace, myrescount.Count));
     }
 }
