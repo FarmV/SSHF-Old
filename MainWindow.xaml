@@ -4,18 +4,45 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WPF_Traslate_Test"
-        mc:Ignorable="d"
-        KeyDown="myTestKey"
-        Title="MainWindow" Height="150" Width="200" WindowStartupLocation="CenterScreen" WindowState="Normal" WindowStyle="None" AllowsTransparency="True" Visibility="Visible">
+        
+       
+        mc:Ignorable="d" Height="50" Width="170" WindowStartupLocation="CenterScreen" WindowState="Normal" WindowStyle="None" AllowsTransparency="True" Visibility="Visible" MouseDoubleClick="MyDoubleFormClick" Closing="NotClose" MouseEnter="EnterForm" MouseLeave="LevaeForm" AllowDrop="True" PreviewMouseMove="One_PreviewMouseMove">
+        
+    <Window.Resources>
+        <Style TargetType="TextBlock" x:Key="TitleText"></Style>
+    </Window.Resources>
+
+
+        <Window.OpacityMask>
+        <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+            <GradientStop Color="Black"/>
+            <GradientStop Color="White" Offset="1"/>
+        </LinearGradientBrush>
+        
+    </Window.OpacityMask>
+    <Window.Background >
+        <ImageBrush></ImageBrush>
+        
+    </Window.Background>
+
+
+
     <Grid VerticalAlignment="Bottom" HorizontalAlignment="Right" Height="50" Width="170">
-        <Button x:Name="Bot" Content="Button" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Click="Button_Click"/>
+        <Grid.Background>
+            <ImageBrush/>
+        </Grid.Background>
+        <Button x:Name="ButtonTanslate" Content="Перевести" Click="Button_Click" FontFamily="Times New Roman" FontSize="18"/>
     </Grid>
-    
-    
-      
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
 </Window>
+    

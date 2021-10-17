@@ -13,5 +13,10 @@ namespace WPF_Traslate_Test
     /// </summary>
     public partial class App : Application
     {
+
+
+
+
+
     }
 }
