@@ -43,8 +43,50 @@ namespace WPF_Traslate_Test
             cmd("taskkill /f /im chromedriver.exe");
             HookIntiallize();
             CheckTempFiles();
+            MyMouseHook = new MouseHook();
+            MyMouseHook.Install();
+            MyMouseHook.MouseWheel += MyMouseSize;
             ButtonTanslate.Visibility = Visibility.Hidden;
             this.Visibility = Visibility.Hidden;
+        }
+
+
+
+        private MouseHook MyMouseHook;
+
+        private void MyMouseSize(MouseHook.MSLLHOOKSTRUCT mouseStruct)
+        {
+
+            if (CapitalDown)
+            {
+
+                try
+                {
+                    this.Width = this.Width + (this.Width / 20);
+                    this.Height = this.Height + (this.Height / 20);
+
+
+                }
+                catch (Exception)
+                {
+
+
+                }
+            }
+            if (LSHIFTDown)
+            {
+                try
+                {
+                    this.Width = this.Width - (this.Width / 20);
+                    this.Height = this.Height - (this.Height / 20);
+
+                }
+                catch (Exception)
+                {
+
+
+                }
+            }
         }
 
         public void Dispose()
@@ -129,8 +171,7 @@ namespace WPF_Traslate_Test
         //  CancellationToken ct = cts.Token;
         public static volatile bool MyEnetrForm;
 
-        public async void RefreshWindow()
-        {
+        public async void RefreshWindow() =>
             //double screenRealWidth = SystemParameters.PrimaryScreenWidth * (dpiBase * getScalingFactor()) / dpiBase;
             //double screenRealHeight = SystemParameters.PrimaryScreenHeight * (dpiBase * getScalingFactor()) / dpiBase;
 
@@ -144,80 +185,23 @@ namespace WPF_Traslate_Test
 
                 Dispatcher.Invoke(async () =>
                 {
-                    for (; ; )
+                    for (;;)
                     {
-                        if (MyEnetrForm)
+                        if (MyCancelRefreshWindows)
                         {
                             break;
                         }
-
-                        //  248/24 = 10.333
-                        // 100% / 10.333 = 9.677 %
-                        if (startfor)
-                        {
-                            Point startpoint = GetCursorPosition();
-                            myPoints.Enqueue(startpoint);
-                            startfor = false;
-                        }
-                        //                 50          40        1.25          80  100-80    20
-                        //                 100          120      -20               120 /10      /20                          
                         else
                         {
-                            //Point startpoint = GetCursorPosition();
-                            //myPoints.Enqueue(startpoint);
-                            Point oldpoint = myPoints.Dequeue();      // 999   1231                                                                   // 458   67
                             Point point = GetCursorPosition();
-                            await Task.Delay(10);
-                            double res1 = oldpoint.X;
-                            double res2 = oldpoint.Y;
-                            double res3 = point.X;
-                            double res4 = point.Y;
-                            double totalresX = 100.00 / (res1 / res3); //3000
-
-                            double a1 = (oldpoint.X - point.X) / 10;                //192
-                            double a2 = (oldpoint.Y - point.Y) / 10;                // 108
-
-                            // 10
-                            var timedelay = 2 * a1;
-                            if (timedelay == 0)
-                            {
-                                timedelay = 170;
-                            }
-                            var timedelay2 = 0.6 * a2;
-                            if (timedelay2 == 0)
-                            {
-                                timedelay2 = 170;
-                            }
-                            if (timedelay < 0)
-                            {
-                                timedelay = timedelay * -1;
-                            }
-                            if (timedelay2 < 0)
-                            {
-                                timedelay2 = timedelay2 * -1;
-                            }
-                            var totaltimedealy = (timedelay + timedelay2) / 2;
-                            await Task.Delay((int)totaltimedealy);
-                            One.Left = point.X + 17;
-                            // await Task.Delay((int)timedelay2);
-                            One.Top = point.Y + 17;
-                            myPoints.Enqueue(point);
-                            //point.Y = SystemParameters.PrimaryScreenWidth*(96 * 1.25) / 96;
-                            //point.X = SystemParameters.PrimaryScreenHeight * (96 * 1.25) / 96;
-                            //  Point point = myPoints.Dequeue();
-
+                            await Task.Delay(2);
+                            One.Left = point.X + 24;
+                            One.Top = point.Y + 24;
                         }
                     }
-
-
                 });
 
             });
-
-
-
-
-        }
 
 
         public static readonly string PathOriginalScreenshot = $"{System.IO.Path.GetTempPath()}myAPP\\Original.png";
@@ -336,6 +320,11 @@ namespace WPF_Traslate_Test
                 CapitalDown = false;
 
             }
+            if (key == KeyboardHook.VKeys.LCONTROL)
+            {
+                LcontrolDown = false;
+
+            }
 
         }
 
@@ -343,6 +332,7 @@ namespace WPF_Traslate_Test
         bool LWINDown = false;
         bool LSHIFTDown = false;
         bool CapitalDown = false;
+        bool LcontrolDown = false;
 
         private void keyboardHook_KeyDown(KeyboardHook.VKeys key)
         {
@@ -366,6 +356,12 @@ namespace WPF_Traslate_Test
                 CapitalDown = true;
 
             }
+            if (key == KeyboardHook.VKeys.LCONTROL)
+            {
+                LcontrolDown = true;
+            }
+
+
 
             if (KeyADown & LWINDown & LSHIFTDown)
             {
@@ -430,6 +426,11 @@ namespace WPF_Traslate_Test
                 }
 
             }
+            if (CapitalDown & LcontrolDown)
+            {
+                MyCancelRefreshWindows = !MyCancelRefreshWindows;
+                Dispatcher.Invoke(new Action(RefreshWindow));
+            }
             if (LWINDown & LSHIFTDown & CapitalDown)
             {
                 KeyADown = false;
@@ -454,6 +455,15 @@ namespace WPF_Traslate_Test
         {
             // var image1 = new BitmapImage(new Uri(@"C:\Users\user\Pictures\2.png"));
             BitmapSource image = Clipboard.GetImage();
+            try
+            {
+                RenderOptions.SetBitmapScalingMode(image, BitmapScalingMode.NearestNeighbor);
+            }
+            catch (Exception)
+            {
+
+
+            }
             return image ?? null;
         }
 
@@ -481,6 +491,7 @@ namespace WPF_Traslate_Test
 
         private void MyDoubleFormClick(object sender, MouseButtonEventArgs e)
         {
+            MyCancelRefreshWindows = false;
             this.Close();
         }
 
@@ -557,10 +568,16 @@ namespace WPF_Traslate_Test
         {
             MyEnetrForm = true;
         }
-
+        bool MyCancelRefreshWindows = false;
+        Point MyPosCursorLeaveForm = GetCursorPosition();
         private void LevaeForm(object sender, MouseEventArgs e)
         {
+            MyPosCursorLeaveForm = GetCursorPosition();
             MyEnetrForm = false;
+            if (MyCancelRefreshWindows)
+            {
+                return;
+            }
             Dispatcher.Invoke(new Action(RefreshWindow));
         }
 
@@ -589,6 +606,12 @@ namespace WPF_Traslate_Test
                     string path12 = path;
                 }
             }
+        }
+
+        private void MyMouseRight(object sender, MouseButtonEventArgs e)
+        {
+            MyCancelRefreshWindows = !MyCancelRefreshWindows;
+            Dispatcher.Invoke(new Action(RefreshWindow));
         }
     }
 
