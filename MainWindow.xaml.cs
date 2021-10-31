@@ -171,32 +171,64 @@ namespace WPF_Traslate_Test
         //  CancellationToken ct = cts.Token;
         public static volatile bool MyEnetrForm;
 
+
+
+
+
         public async void RefreshWindow() =>
-            //double screenRealWidth = SystemParameters.PrimaryScreenWidth * (dpiBase * getScalingFactor()) / dpiBase;
-            //double screenRealHeight = SystemParameters.PrimaryScreenHeight * (dpiBase * getScalingFactor()) / dpiBase;
+        //double screenRealWidth = SystemParameters.PrimaryScreenWidth * (dpiBase * getScalingFactor()) / dpiBase;
+        //double screenRealHeight = SystemParameters.PrimaryScreenHeight * (dpiBase * getScalingFactor()) / dpiBase;
 
-            //Matrix m =
-            //PresentationSource.FromVisual(Application.Current.MainWindow).CompositionTarget.TransformToDevice;
-            //double dx = m.M11;
-            //double dy = m.M22;          
+        //Matrix m =
+        //PresentationSource.FromVisual(Application.Current.MainWindow).CompositionTarget.TransformToDevice;
+        //double dx = m.M11;
+        //double dy = m.M22;          
 
-            await Task.Run(() =>//todo Переработать алгоритм захвата окна(следования за курсором)
+
+        await Task.Run(() =>//todo Переработать алгоритм захвата окна(следования за курсором)
             {
 
                 Dispatcher.Invoke(async () =>
                 {
-                    for (;;)
+
+                    for (int i = 0; ; i++)
                     {
                         if (MyCancelRefreshWindows)
                         {
                             break;
                         }
-                        else
+                        if (!MyCancelRefreshWindows)
                         {
-                            Point point = GetCursorPosition();
-                            await Task.Delay(2);
-                            One.Left = point.X + 24;
-                            One.Top = point.Y + 24;
+                            //if (MyEnetrForm)
+                            //{
+                            //    break;
+                            //}
+                            if (OneLeave)
+                            {
+                                Point point1 = GetCursorPosition();
+                                await Task.Delay(2);
+                                One.Left = point1.X + 24;
+                                One.Top = point1.Y + 24;
+                            }
+                            else
+                            {
+                                //Point leavePos = MyPosCursorLeaveFormLast;
+                                //Point point2 = GetCursorPosition();
+
+                                Point point1 = GetCursorPosition();
+                                await Task.Delay(2);
+                                One.Left = point1.X + 24;
+                                One.Top = point1.Y + 24;
+
+
+
+
+
+
+
+
+
+                            }
                         }
                     }
                 });
@@ -377,7 +409,26 @@ namespace WPF_Traslate_Test
                     BitmapSource imageFromBuffer = GetBuferImage();
 
                     //if (imageFromBuffer == null) throw new ArgumentNullException("Буфер пустой", new Exception("imageFromBuffer"));
-                    if (imageFromBuffer != null)
+                    if (imageFromBuffer == null)
+                    {
+                        if (System.IO.File.Exists(PathOriginalScreenshot))
+                        {
+                            BitmapImage bi = new BitmapImage();
+                            bi.BeginInit();
+                            bi.UriSource = new Uri(PathOriginalScreenshot);
+                            bi.CacheOption = BitmapCacheOption.OnLoad;
+                            bi.EndInit();
+
+                            //BitmapEncoder encoder = new PngBitmapEncoder();
+                            //encoder.Frames.Add(BitmapFrame.Create(new FileStream(PathOriginalScreenshot,FileMode.OpenOrCreate)));                              
+                            //imageFromBuffer = encoder.Frames[0];
+                            imageFromBuffer = bi;
+
+
+
+                        }                           
+                    }
+                    else
                     {
                         try
                         {
@@ -398,7 +449,7 @@ namespace WPF_Traslate_Test
                         catch (Exception)
                         {
 
-                            throw new ArgumentNullException("Буфер пустой", new Exception("imageFromBuffer"));
+                            throw new ArgumentNullException("Буфер пустой, нет изображения", new Exception("imageFromBuffer"));
                         }
                     }
 
@@ -413,6 +464,7 @@ namespace WPF_Traslate_Test
                     {
                         this.Show();
                     }
+                    Dispatcher.Invoke(new Action(RefreshWindow));
                 }
                 catch (ArgumentNullException ex)
                 {
@@ -569,15 +621,29 @@ namespace WPF_Traslate_Test
             MyEnetrForm = true;
         }
         bool MyCancelRefreshWindows = false;
-        Point MyPosCursorLeaveForm = GetCursorPosition();
+
+        bool OneLeave = false;
+        Point MyPosCursorLeaveFormLast = new Point();
         private void LevaeForm(object sender, MouseEventArgs e)
         {
-            MyPosCursorLeaveForm = GetCursorPosition();
+            bool OneLeave = true;
+
+            //if (massPoint.Length == 0)
+            //{
+            //    massPoint[0] = MyPosCursorLeaveFormPreLast;
+            //    massPoint[1] = MyPosCursorLeaveFormLast; 
+            //}
+            //if (massPoint.Length > 0)
+            //{
+            //    massPoint[1] = MyPosCursorLeaveFormLast;
+            //}
+
             MyEnetrForm = false;
             if (MyCancelRefreshWindows)
             {
                 return;
             }
+            MyPosCursorLeaveFormLast = GetCursorPosition();
             Dispatcher.Invoke(new Action(RefreshWindow));
         }
 
