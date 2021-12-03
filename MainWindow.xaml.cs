@@ -29,6 +29,20 @@ namespace WPF_Traslate_Test
 {
     public partial class MainWindow : Window, IDisposable
     {
+        public static readonly string PathOriginalScreenshot = $"{System.IO.Path.GetTempPath()}myAPP\\Original.png";
+        public static readonly string PathModifiedScreenshot = $"{System.IO.Path.GetTempPath()}myAPP\\forbackground.png";
+
+        private static volatile Queue<Point> myPoints = new Queue<Point>();
+
+        public static volatile bool MyEnetrForm;
+
+        public bool myHideWindow;
+      
+        //  public static CancellationTokenSource cts = new CancellationTokenSource();    
+        //  CancellationToken ct = cts.Token;
+
+        #region Инициализация Конструктор
+
         public MainWindow()
         {//todo Найти прогрессбар скчаивания хромдрайвера
 
@@ -48,10 +62,13 @@ namespace WPF_Traslate_Test
             MyMouseHook.MouseWheel += MyMouseSize;
             ButtonTanslate.Visibility = Visibility.Hidden;
             this.Visibility = Visibility.Hidden;
+
+            
         }
 
+        #endregion
 
-
+        #region Хлам Инициализация хука мыши
         private MouseHook MyMouseHook;
 
         private void MyMouseSize(MouseHook.MSLLHOOKSTRUCT mouseStruct)
@@ -88,7 +105,119 @@ namespace WPF_Traslate_Test
                 }
             }
         }
+        #endregion
 
+        #region Функция вызова CMD и Функция запрещающая вызов более одной копии приложения
+        public static void cmd(string line)
+        {
+            Process.Start(new ProcessStartInfo { FileName = "cmd", Arguments = $"/c {line}", WindowStyle = ProcessWindowStyle.Hidden }).WaitForExit();
+        }
+
+        private static volatile Mutex InstanceCheckMutex;
+        private static bool SingleProgramCheck()
+        {
+            bool isNew = true;
+            InstanceCheckMutex = new Mutex(true, "MyMutexSingleProgramCheck", out isNew);
+            return isNew;
+
+        }
+        #endregion
+
+        #region Инициализация иконки для трея, обработка нажатя по иконке
+        public System.Windows.Forms.NotifyIcon _notifyIcon;
+        public bool MenuIsOpen = default;
+        private void SetIconToMainApplication()
+        {
+            _notifyIcon = new System.Windows.Forms.NotifyIcon();
+            _notifyIcon.Icon = System.Drawing.Icon.ExtractAssociatedIcon($"{AppContext.BaseDirectory}{Process.GetCurrentProcess().ProcessName}.exe");
+            _notifyIcon.Visible = true;
+            _notifyIcon.Click += ClickNotifyIcon;
+        }
+
+        public void ClickNotifyIcon(object sender, EventArgs e)
+        {
+            if (MenuIsOpen)
+            {
+                WindowCollection adssad = App.Current.Windows;
+                //  object bbb = adssad.SyncRoot;
+                foreach (var item in App.Current.Windows)
+                {
+                    if (item is WPF_Traslate_Test.MenuContent)
+                    {
+                        MenuContent menu = (MenuContent)item;
+                        //menu.Dispose();
+                        menu.Close();
+                        MenuIsOpen = false;
+                    }
+                }
+                return;
+            }
+            MenuIsOpen = true;
+            App.Current.ShutdownMode = System.Windows.ShutdownMode.OnExplicitShutdown;
+            One.Visibility = Visibility.Collapsed;
+            One.Hide();
+            MenuContent menuContent = new MenuContent(this);
+            Point positionCursor = GetCursorPosition();
+            menuContent.Topmost = true;
+            double resolutionWidth = SystemParameters.PrimaryScreenWidth;
+            double resolutionHeight = SystemParameters.PrimaryScreenHeight;
+
+            WindowCollection windowsMyApp = App.Current.Windows;
+
+            double posT = menuContent.Top = positionCursor.Y - 80.00;
+            double posL = menuContent.Left = positionCursor.X + 5;
+            menuContent.Show();
+            double menuWidth = default;
+            double menuHeight = default;
+            foreach (var item in App.Current.Windows)
+            {
+                if (item is WPF_Traslate_Test.MenuContent)
+                {
+                    MenuContent menu = (MenuContent)item;
+
+                    menuWidth = menu.ActualWidth;
+                    menuHeight = menu.ActualHeight;
+                }
+            }
+
+            if (menuWidth + positionCursor.X > resolutionWidth)
+            {
+                menuContent.Left = resolutionWidth - menuWidth;
+                menuContent.Left = positionCursor.X - (menuWidth + 5);
+            }
+            if (menuHeight + positionCursor.Y < resolutionHeight)
+            {
+                menuContent.Top = resolutionHeight - menuHeight;
+                menuContent.Top = positionCursor.Y - (menuHeight - 80.00);
+            }
+
+
+        }
+        #endregion
+
+        #region Проверка временных файлов и их очиста
+        private static void CheckTempFiles(bool delete = false)
+        {
+             string pathTemporary = $"{System.IO.Path.GetTempPath()}myAPP";
+             DirectoryInfo directory = new DirectoryInfo(pathTemporary);
+             if (Directory.Exists(pathTemporary) & delete == false)
+             {
+                 // MessageBox.Show("true");
+                 // directory.Delete();
+             }
+             if (!Directory.Exists(pathTemporary) & delete == false)
+             {
+                 directory.Create();
+             }
+             if (Directory.Exists(pathTemporary) & delete == true)
+             {
+                 directory.Delete(true); //todo Изменить алгоритм очистки с изменнением папкки умолчания хромдрайвера
+             }
+        
+        }
+        #endregion
+
+        #region Освобождение ресурсов
         public void Dispose()
         {
             GC.SuppressFinalize(this);
@@ -115,47 +244,9 @@ namespace WPF_Traslate_Test
             {
             };
         }
-        private void SetIconToMainApplication()
-        {
-            _notifyIcon = new System.Windows.Forms.NotifyIcon();
-            _notifyIcon.Icon = System.Drawing.Icon.ExtractAssociatedIcon($"{AppContext.BaseDirectory}{Process.GetCurrentProcess().ProcessName}.exe");
-            _notifyIcon.Visible = true;
-            _notifyIcon.Click += ClickNotifyIcon;
-        }
+        #endregion
 
-        private static void CheckTempFiles(bool delete = false)
-        {
-            string pathTemporary = $"{System.IO.Path.GetTempPath()}myAPP";
-            DirectoryInfo directory = new DirectoryInfo(pathTemporary);
-            if (Directory.Exists(pathTemporary) & delete == false)
-            {
-                // MessageBox.Show("true");
-                // directory.Delete();
-            }
-            if (!Directory.Exists(pathTemporary) & delete == false)
-            {
-                directory.Create();
-            }
-            if (Directory.Exists(pathTemporary) & delete == true)
-            {
-                directory.Delete(true); //todo Изменить алгоритм очистки с изменнением папкки умолчания хромдрайвера
-            }
-
-        }
-        public static void cmd(string line)
-        {
-            Process.Start(new ProcessStartInfo { FileName = "cmd", Arguments = $"/c {line}", WindowStyle = ProcessWindowStyle.Hidden }).WaitForExit();
-        }
-
-        private static volatile Mutex InstanceCheckMutex;
-        private static bool SingleProgramCheck()
-        {
-            bool isNew = true;
-            InstanceCheckMutex = new Mutex(true, "MyMutexSingleProgramCheck", out isNew);
-            return isNew;
-
-        }
-
+        #region Функция инициализации хука клавиатуры
         private KeyboardHook keyboardHook;
         private void HookIntiallize()
         {
@@ -164,17 +255,9 @@ namespace WPF_Traslate_Test
             keyboardHook.KeyDown += new KeyboardHook.KeyboardHookCallback(keyboardHook_KeyDown);
             keyboardHook.Install();
         }
-
-        private static volatile Queue<Point> myPoints = new Queue<Point>();
-        private static volatile bool startfor = true;
-        //  public static CancellationTokenSource cts = new CancellationTokenSource();
-        //  CancellationToken ct = cts.Token;
-        public static volatile bool MyEnetrForm;
-
-
-
-
-
+        #endregion
+       
+        #region Функция обновления положения окна
         public async void RefreshWindow() =>
         //double screenRealWidth = SystemParameters.PrimaryScreenWidth * (dpiBase * getScalingFactor()) / dpiBase;
         //double screenRealHeight = SystemParameters.PrimaryScreenHeight * (dpiBase * getScalingFactor()) / dpiBase;
@@ -183,10 +266,11 @@ namespace WPF_Traslate_Test
         //PresentationSource.FromVisual(Application.Current.MainWindow).CompositionTarget.TransformToDevice;
         //double dx = m.M11;
         //double dy = m.M22;          
-
-
+        
+            
         await Task.Run(() =>//todo Переработать алгоритм захвата окна(следования за курсором)
             {
+                
 
                 Dispatcher.Invoke(async () =>
                 {
@@ -235,10 +319,9 @@ namespace WPF_Traslate_Test
 
             });
 
+        #endregion
 
-        public static readonly string PathOriginalScreenshot = $"{System.IO.Path.GetTempPath()}myAPP\\Original.png";
-        public static readonly string PathModifiedScreenshot = $"{System.IO.Path.GetTempPath()}myAPP\\forbackground.png";
-        public bool myHideWindow;
+        #region Функция получения перевода для формы
         private Task GetTranslate()
         {
             BitmapSource imageFromBuffer = GetBuferImage();
@@ -308,30 +391,9 @@ namespace WPF_Traslate_Test
 
             return Task.CompletedTask;
         }
+        #endregion
 
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-
-
-            try
-            {
-                //Dispatcher.Invoke(new Action(RefreshWindow));
-                GetTranslate().Wait();
-                // ButtonTanslate.Visibility = Visibility.Hidden;
-                keyboardHook.Install();
-            }
-            catch (ArgumentNullException ex)
-            {
-                ButtonTanslate.Content = $"{ex.Message}{Environment.NewLine}{ex.InnerException.Message}";
-                keyboardHook.Install();
-                return;
-            }
-            catch
-            {
-                return;
-            }
-        }
-
+        #region Обработка нажатия клавиш, вызов соответствующих функций
         private void keyboardHook_KeyUp(KeyboardHook.VKeys key)
         {
             if (key == KeyboardHook.VKeys.KEY_A)
@@ -495,7 +557,9 @@ namespace WPF_Traslate_Test
                 ButtonTanslate.Content = key;
             }
         }
+        #endregion
 
+        #region Получение изображения из буфера обмена
         private static BitmapSource GetBuferImage()
         {
             // var image1 = new BitmapImage(new Uri(@"C:\Users\user\Pictures\2.png"));
@@ -511,6 +575,9 @@ namespace WPF_Traslate_Test
             }
             return image ?? null;
         }
+        #endregion
+
+        #region Функционал получения позиции курсора
 
         [StructLayout(LayoutKind.Sequential)]
         public struct POINT
@@ -533,74 +600,13 @@ namespace WPF_Traslate_Test
             GetCursorPos(out lpPoint);
             return lpPoint;
         }
+        #endregion
 
+        #region Обработка событий формы
         private void MyDoubleFormClick(object sender, MouseButtonEventArgs e)
         {
             MyCancelRefreshWindows = false;
             this.Close();
-        }
-
-        public System.Windows.Forms.NotifyIcon _notifyIcon;
-        public bool MenuIsOpen = default;
-
-        public void ClickNotifyIcon(object sender, EventArgs e)
-        {
-            if (MenuIsOpen)
-            {
-                WindowCollection adssad = App.Current.Windows;
-                //  object bbb = adssad.SyncRoot;
-                foreach (var item in App.Current.Windows)
-                {
-                    if (item is WPF_Traslate_Test.MenuContent)
-                    {
-                        MenuContent menu = (MenuContent)item;
-                        //menu.Dispose();
-                        menu.Close();
-                        MenuIsOpen = false;
-                    }
-                }
-                return;
-            }
-            MenuIsOpen = true;
-            App.Current.ShutdownMode = System.Windows.ShutdownMode.OnExplicitShutdown;
-            One.Visibility = Visibility.Collapsed;
-            One.Hide();
-            MenuContent menuContent = new MenuContent(this);
-            Point positionCursor = GetCursorPosition();
-            menuContent.Topmost = true;
-            double resolutionWidth = SystemParameters.PrimaryScreenWidth;
-            double resolutionHeight = SystemParameters.PrimaryScreenHeight;
-
-            WindowCollection windowsMyApp = App.Current.Windows;
-
-            double posT = menuContent.Top = positionCursor.Y - 80.00;
-            double posL = menuContent.Left = positionCursor.X + 5;
-            menuContent.Show();
-            double menuWidth = default;
-            double menuHeight = default;
-            foreach (var item in App.Current.Windows)
-            {
-                if (item is WPF_Traslate_Test.MenuContent)
-                {
-                    MenuContent menu = (MenuContent)item;
-
-                    menuWidth = menu.ActualWidth;
-                    menuHeight = menu.ActualHeight;
-                }
-            }
-
-            if (menuWidth + positionCursor.X > resolutionWidth)
-            {
-                menuContent.Left = resolutionWidth - menuWidth;
-                menuContent.Left = positionCursor.X - (menuWidth + 5);
-            }
-            if (menuHeight + positionCursor.Y < resolutionHeight)
-            {
-                menuContent.Top = resolutionHeight - menuHeight;
-                menuContent.Top = positionCursor.Y - (menuHeight - 80.00);
-            }
-
-
         }
 
         private void NotClose(object sender, System.ComponentModel.CancelEventArgs e)
@@ -619,7 +625,7 @@ namespace WPF_Traslate_Test
         Point MyPosCursorLeaveFormLast = new Point();
         private void LevaeForm(object sender, MouseEventArgs e)
         {
-            bool OneLeave = true;
+            
 
             //if (massPoint.Length == 0)
             //{
@@ -639,6 +645,11 @@ namespace WPF_Traslate_Test
             MyPosCursorLeaveFormLast = GetCursorPosition();
             Dispatcher.Invoke(new Action(RefreshWindow));
         }
+        private void MyMouseRight(object sender, MouseButtonEventArgs e)
+        {
+            MyCancelRefreshWindows = !MyCancelRefreshWindows;
+            Dispatcher.Invoke(new Action(RefreshWindow));
+        }
 
         private void One_PreviewMouseMove(object sender, MouseEventArgs e)
         {
@@ -655,27 +666,45 @@ namespace WPF_Traslate_Test
                 }
             }
         }
-        private void Form1_Drag(object sender, DragEventArgs e)
+        private void Button_Click(object sender, RoutedEventArgs e)
         {
-            if (e.Data.GetDataPresent("FileDrop", false))
+
+
+            try
             {
-                string[] paths = (string[])(e.Data.GetData("FileDrop", false));
-                foreach (string path in paths)
-                {
-                    string path12 = path;
-                }
+                //Dispatcher.Invoke(new Action(RefreshWindow));
+                GetTranslate().Wait();
+                // ButtonTanslate.Visibility = Visibility.Hidden;
+                keyboardHook.Install();
+            }
+            catch (ArgumentNullException ex)
+            {
+                ButtonTanslate.Content = $"{ex.Message}{Environment.NewLine}{ex.InnerException.Message}";
+                keyboardHook.Install();
+                return;
+            }
+            catch
+            {
+                return;
             }
         }
+        //private void Form1_Drag(object sender, DragEventArgs e)
+        //{
+        //    if (e.Data.GetDataPresent("FileDrop", false))
+        //    {
+        //        string[] paths = (string[])(e.Data.GetData("FileDrop", false));
+        //        foreach (string path in paths)
+        //        {
+        //            string path12 = path;
+        //        }
+        //    }
+        //}
+        #endregion
 
-        private void MyMouseRight(object sender, MouseButtonEventArgs e)
-        {
-            MyCancelRefreshWindows = !MyCancelRefreshWindows;
-            Dispatcher.Invoke(new Action(RefreshWindow));
-        }
     }
 
 }
-
+        #region Реализация логики получения перевода
 public class MyClassTranslateText
 {
     public static string Query = $"Client Packs — Module makers can now create Client Packs in the toolset, which can be placed in clients My Documents\u005Cpwc\u005C folder to allow users to connect to Multiplayer Games for which they do not have the module.These.pwc files contain only the dataabsolutely necessary to run the module on the client side are useful if, for instance, youare running a persistent world and do not wish to allow clients to open your module withall of its areas, creatures, and scripts visible.";
@@ -839,3 +868,4 @@ public class MyClassTranslateText
         return Task.FromResult(Tuple.Create(myReplace, myrescount.Count));
     }
 }
+#endregion
