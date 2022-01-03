@@ -21,6 +21,7 @@ namespace WPF_Traslate_Test
     /// </summary>
     public partial class MenuContent : Window
     {
+        
         private static MouseHook mouseHook;
         private static MainWindow GlobalWindow;
         private static bool MyClickBoard;
@@ -39,60 +40,80 @@ namespace WPF_Traslate_Test
             mouseHook.LeftButtonDown += ClickMouseOutside;
             mouseHook.Install();
 
-        }
 
+            
+
+
+
+
+        }
         private async void ClickMouseOutside(MouseHook.MSLLHOOKSTRUCT mouseStruct)
         {
-            bool myReturn = false;
-            void ret(object sender, EventArgs e)
-            {
-               // Thread.Sleep(300);
-                myReturn = true;
-            }
-            GlobalWindow._notifyIcon.Click += ret;
-            await Task.Delay(200);
+            GlobalWindow._notifyIcon.Click -= GlobalWindow.ClickNotifyIcon;
+            //bool myReturn = false;
+            //void ret(object sender, EventArgs e)
+            //{
+            //    // Thread.Sleep(300);
+            //    myReturn = true;
+            //}
+            //GlobalWindow._notifyIcon.Click += ret;
+            //await Task.Delay(100);
             if (!MyClickBoard)
             {
-                if (myReturn)
-                {
-                    GlobalWindow._notifyIcon.Click -= ret;
-                    return;
-                }
-                else
-                {
-                    if (GlobalWindow.MenuIsOpen)
+                //if (myReturn)
+                //{
+                //    GlobalWindow._notifyIcon.Click -= ret;
+                //    return;
+                //}
+                
+                    if (GlobalWindow.NotificationMenuIsOpen)
                     {
-                        var adssad = App.Current.Windows;
+                        //WindowCollection CollectionMyAPPwindows = App.Current.Windows;
                         //  object bbb = adssad.SyncRoot;
                         foreach (var item in App.Current.Windows)
                         {
-                            if (item is WPF_Traslate_Test.MenuContent)
+                            if (item is MenuContent)
                             {
                                 MenuContent menu = (MenuContent)item;
                                 //menu.Dispose();
                                 mouseHook.Uninstall();
+                                bool gg = false;
+                                foreach (RadioButton radioButton in MainWindow.FindVisualChildren<RadioButton>(this))
+                                {
+                                    if (radioButton.IsChecked == true)
+                                    {
+                                        GlobalWindow.MenuCheckedButton.Add(radioButton.Name, true);
+                                        gg = true;
+                                    }
+                                }
+
+
                                 menu.Close();
-                                GlobalWindow.MenuIsOpen = false;
+
+                                GlobalWindow.NotificationMenuIsOpen = false;
+                                await Task.Delay(200);// без задержки открывается меню заного по notification
+                                GlobalWindow._notifyIcon.Click += GlobalWindow.ClickNotifyIcon;
                             }
                         }
                         return;
                     }
-                }
+                
                 //this.Dispose();
-               
-               // MyClickBoard = !MyClickBoard;
+
+                // MyClickBoard = !MyClickBoard;
             }
-            
+
 
 
         }
-
+        //???
         
+
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             this.Close();
-            
+
             GlobalWindow.Dispose();
             App.Current.Shutdown();
 
@@ -101,7 +122,7 @@ namespace WPF_Traslate_Test
 
         private void Button_Click_1(object sender, RoutedEventArgs e)
         {
-            
+
             if (GlobalWindow.One.Width == GlobalWindow.ButtonTanslate.ActualWidth && GlobalWindow.One.Height == GlobalWindow.ButtonTanslate.ActualHeight)
             {
                 return;
@@ -116,20 +137,20 @@ namespace WPF_Traslate_Test
                 source.CacheOption = BitmapCacheOption.OnLoad;
                 source.EndInit();
                 GlobalWindow.Width = source.PixelWidth;
-                GlobalWindow.Height= source.PixelHeight;
-                ib.ImageSource = source;               
+                GlobalWindow.Height = source.PixelHeight;
+                ib.ImageSource = source;
                 GlobalWindow.One.Background = ib;
             }
             GlobalWindow.One.Show();
             GlobalWindow.One.Visibility = Visibility.Visible;
-            GlobalWindow.MenuIsOpen = false;
+            GlobalWindow.NotificationMenuIsOpen = false;
             this.Close();
         }
 
         private void MyMouseLevae(object sender, MouseEventArgs e)
         {
 
-            
+
         }
 
         public void Dispose()
@@ -139,8 +160,8 @@ namespace WPF_Traslate_Test
 
         private void ClearFormClick(object sender, RoutedEventArgs e)
         {
-          //  GlobalWindow.One.Background = default;
-           // GlobalWindow.ButtonTanslate.Visibility = Visibility.Visible;
+            //  GlobalWindow.One.Background = default;
+            // GlobalWindow.ButtonTanslate.Visibility = Visibility.Visible;
             GlobalWindow.One.Width = GlobalWindow.ButtonTanslate.ActualWidth;
             GlobalWindow.One.Height = GlobalWindow.ButtonTanslate.ActualHeight;
             GlobalWindow.One.Background = Brushes.Transparent;
@@ -153,18 +174,40 @@ namespace WPF_Traslate_Test
 
         }
 
-        private void Window_Activated(object sender, EventArgs e)
+        private void Window_Activated(object sender, EventArgs e) 
         {
-            
+            if (GlobalWindow.MenuCheckedButton.Count > 0)
+            {
+                KeyValuePair<string, bool> r = GlobalWindow.MenuCheckedButton.First(x => x.Value == true); //todo написать ноормально
+
+
+
+                foreach (RadioButton radioButton in MainWindow.FindVisualChildren<RadioButton>(this))
+                {
+
+                    RadioButton radioButtonChecked = radioButton;
+
+                    if (radioButton.Name == r.Key)
+                    {
+                        radioButton.IsChecked = true;
+
+                    }
+                }
+                GlobalWindow.MenuCheckedButton.Clear();
+
+
+
+
+            }
 
         }
-        
+
         private void ShowPocces(object sender, RoutedEventArgs e) //todo Добавить прогрессбар при скрытии процесса
         {
             if (GlobalWindow.myHideWindow)
             {
-              GlobalWindow.myHideWindow = false;
-              
+                GlobalWindow.myHideWindow = false;
+
                 if (sender is Button)
                 {
                     Button but = (Button)sender;
@@ -174,7 +217,7 @@ namespace WPF_Traslate_Test
             else
             {
                 GlobalWindow.myHideWindow = true;
-               
+
                 if (sender is Button)
                 {
                     Button but = (Button)sender;

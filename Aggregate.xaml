@@ -1,0 +1,398 @@
+﻿<Window x:Class="WPF_Traslate_Test.Aggregate"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WPF_Traslate_Test"
+        mc:Ignorable="d"
+        Title="Aggregate" Height="450" Width="800"
+        MinHeight="200"
+        MinWidth="510">
+    <Grid>
+        <DockPanel LastChildFill="True">
+            
+            <TextBlock 
+                DockPanel.Dock="Left" 
+                Background="LightBlue"
+                Padding="10">
+                              
+                <StackPanel
+                Orientation="Vertical"
+                 MaxWidth="250"   >
+                    
+                     <DockPanel
+                         
+                        LastChildFill="True"
+                        Background="LightGoldenrodYellow"
+                        MinHeight="20"
+                        MaxHeight="65"
+                        MaxWidth="220"
+                        Margin="10">
+                        
+                        <TextBlock
+                            DockPanel.Dock="Left"
+                            TextAlignment="Center"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Margin="10"
+                            MinWidth="100"
+                            MaxWidth="160"
+                            MaxHeight="100"                          
+                            TextWrapping="Wrap">
+                            Группа 1 
+                            
+                        </TextBlock>
+                         
+                        <TextBlock
+                            DockPanel.Dock="Right">
+                            <TextBlock.Margin>
+                                <Thickness Top="24"/>
+                            </TextBlock.Margin>
+                                                       
+                            
+                            <RadioButton>
+                                <RadioButton.Margin>
+                                    <Thickness  Bottom="12" Right="12"/>
+                                </RadioButton.Margin>
+                                
+                                <RadioButton.RenderTransform>
+                                    <ScaleTransform ScaleX="1.8" ScaleY="1.8">
+                                        
+                                    </ScaleTransform>
+                                </RadioButton.RenderTransform>
+                            </RadioButton>
+                            
+                        </TextBlock>
+                         
+                     </DockPanel>
+                    
+                     <DockPanel
+                         
+                        LastChildFill="True"
+                        Background="LightGoldenrodYellow"
+                        MinHeight="20"
+                        MaxHeight="65"
+                        MaxWidth="220"
+                        Margin="10">
+                        
+                        <TextBlock
+                            DockPanel.Dock="Left"
+                            TextAlignment="Center"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Margin="10"
+                            MinWidth="100"
+                            MaxWidth="160"
+                            MaxHeight="100"                          
+                            TextWrapping="Wrap">
+                            Группа 2 
+                            
+                        </TextBlock>
+                         
+                        <TextBlock
+                            DockPanel.Dock="Right">
+                            <TextBlock.Margin>
+                                <Thickness Top="24"/>
+                            </TextBlock.Margin>
+                                                       
+                            
+                            <RadioButton>
+                                <RadioButton.Margin>
+                                    <Thickness  Bottom="12" Right="12"/>
+                                </RadioButton.Margin>
+                                
+                                <RadioButton.RenderTransform>
+                                    <ScaleTransform ScaleX="1.8" ScaleY="1.8">
+                                        
+                                    </ScaleTransform>
+                                </RadioButton.RenderTransform>
+                            </RadioButton>
+                            
+                        </TextBlock>
+                         
+                     </DockPanel>
+                    
+                                          <DockPanel
+                         
+                        LastChildFill="True"
+                        Background="LightGoldenrodYellow"
+                        MinHeight="20"
+                        MaxHeight="65"
+                        MaxWidth="220"
+                        Margin="10">
+                        
+                        <TextBlock
+                            DockPanel.Dock="Left"
+                            TextAlignment="Center"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Margin="10"
+                            MinWidth="100"
+                            MaxWidth="160"
+                            MaxHeight="100"                          
+                            TextWrapping="Wrap">
+                            Группа 3 
+                            
+                        </TextBlock>
+                         
+                        <TextBlock
+                            DockPanel.Dock="Right">
+                            <TextBlock.Margin>
+                                <Thickness Top="24"/>
+                            </TextBlock.Margin>
+                                                       
+                            
+                            <RadioButton>
+                                <RadioButton.Margin>
+                                    <Thickness  Bottom="12" Right="12"/>
+                                </RadioButton.Margin>
+                                
+                                <RadioButton.RenderTransform>
+                                    <ScaleTransform ScaleX="1.8" ScaleY="1.8">
+                                        
+                                    </ScaleTransform>
+                                </RadioButton.RenderTransform>
+                            </RadioButton>
+                            
+                        </TextBlock>
+                         
+                     </DockPanel>
+                    
+                                         <DockPanel
+                         
+                        LastChildFill="True"
+                        Background="LightGoldenrodYellow"
+                        MinHeight="20"
+                        MaxHeight="65"
+                        MaxWidth="220"
+                        Margin="10">
+                        
+                        <TextBlock
+                            DockPanel.Dock="Left"
+                            TextAlignment="Center"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Margin="10"
+                            MinWidth="100"
+                            MaxWidth="160"
+                            MaxHeight="100"                          
+                            TextWrapping="Wrap">
+                            Группа 4 
+                            
+                        </TextBlock>
+                         
+                        <TextBlock
+                            DockPanel.Dock="Right">
+                            <TextBlock.Margin>
+                                <Thickness Top="24"/>
+                            </TextBlock.Margin>
+                                                       
+                            
+                            <RadioButton>
+                                <RadioButton.Margin>
+                                    <Thickness  Bottom="12" Right="12"/>
+                                </RadioButton.Margin>
+                                
+                                <RadioButton.RenderTransform>
+                                    <ScaleTransform ScaleX="1.8" ScaleY="1.8">
+                                        
+                                    </ScaleTransform>
+                                </RadioButton.RenderTransform>
+                            </RadioButton>
+                            
+                        </TextBlock>
+                         
+                     </DockPanel>
+                    
+                                          <DockPanel
+                         
+                        LastChildFill="True"
+                        Background="LightGoldenrodYellow"
+                        MinHeight="20"
+                        MaxHeight="65"
+                        MaxWidth="220"
+                        Margin="10">
+                        
+                        <TextBlock
+                            DockPanel.Dock="Left"
+                            TextAlignment="Center"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Margin="10"
+                            MinWidth="100"
+                            MaxWidth="160"
+                            MaxHeight="100"                          
+                            TextWrapping="Wrap">
+                            Группа 5 
+                            
+                        </TextBlock>
+                         
+                        <TextBlock
+                            DockPanel.Dock="Right">
+                            <TextBlock.Margin>
+                                <Thickness Top="24"/>
+                            </TextBlock.Margin>
+                                                       
+                            
+                            <RadioButton>
+                                <RadioButton.Margin>
+                                    <Thickness  Bottom="12" Right="12"/>
+                                </RadioButton.Margin>
+                                
+                                <RadioButton.RenderTransform>
+                                    <ScaleTransform ScaleX="1.8" ScaleY="1.8">
+                                        
+                                    </ScaleTransform>
+                                </RadioButton.RenderTransform>
+                            </RadioButton>
+                            
+                        </TextBlock>
+                         
+                     </DockPanel>
+                      
+                </StackPanel>
+                
+            </TextBlock>
+
+
+
+
+            <DockPanel 
+                LastChildFill="True"
+                DockPanel.Dock="Bottom"
+                Background="LightPink"              
+                Margin="13"
+                >
+
+                
+                
+                
+                
+                
+                <TextBlock
+                DockPanel.Dock="Right"
+                Background="LightGreen"
+                Padding="10">
+
+                    <TextBlock.Margin>
+                        <Thickness Right="7" Bottom="7" Top="7"/>
+                    </TextBlock.Margin>  
+                
+                   <StackPanel
+                   Orientation="Vertical">
+                    
+                     <TextBlock
+                        Background="LightGoldenrodYellow"
+                        Padding="10"
+                        Margin="10">
+                        TextBlock G1
+                     </TextBlock>
+                    
+                     <TextBlock
+                         Background="LightGoldenrodYellow"
+                         Padding="10"
+                         Margin="10">
+                         TextBlock G2
+                     </TextBlock>
+                    
+                     <TextBlock
+                         Background="LightGoldenrodYellow"
+                         Padding="10"
+                         Margin="10">
+                         TextBlock G3
+                     </TextBlock>
+                    
+                     <TextBlock
+                         Background="LightGoldenrodYellow"
+                         Padding="10"
+                         Margin="10">
+                         TextBlock G4
+                     </TextBlock>
+                    
+                     <TextBlock
+                         Background="LightGoldenrodYellow"
+                         Padding="10"
+                         Margin="10">
+                         TextBlock G5
+                     </TextBlock>
+                       
+                  </StackPanel>
+            
+                
+                </TextBlock>
+
+
+
+                <StackPanel
+                  
+                  
+                    Margin="10"
+                    DockPanel.Dock="Left"
+                    Background="LightCyan"
+                    Orientation="Horizontal"
+                    
+                   
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Top"
+                    >
+
+                    <TextBlock
+
+                         Background="LightSeaGreen"
+                        MinHeight="60"
+                        MaxHeight="60"
+                        MinWidth="107"
+                        MaxWidth="107"
+                        VerticalAlignment="Top"
+
+                        >
+
+                        <TextBlock.Margin>
+                            <Thickness Left="10" Top="10" Right="10" Bottom="10"/>
+                        </TextBlock.Margin>
+                        123
+                    </TextBlock>
+
+                    <TextBlock
+
+                         Background="LightSeaGreen"
+                       
+                        MinHeight="60"
+                        MaxHeight="60"
+                        MinWidth="107"
+                        MaxWidth="107"
+                        VerticalAlignment="Top"
+                        >
+
+                        <TextBlock.Margin>
+                            <Thickness Left="10" Top="10" Right="10" Bottom="10"/>
+                        </TextBlock.Margin>
+                        123
+                    </TextBlock>
+
+                    <TextBlock
+                         
+                        Background="LightSeaGreen"
+                       
+                        MinHeight="60"
+                        MaxHeight="60"
+                        MinWidth="107"
+                        MaxWidth="107"
+                        VerticalAlignment="Top"
+
+                        >
+
+                        <TextBlock.Margin>
+                            <Thickness Left="10" Top="10" Right="10" Bottom="10"/>
+                        </TextBlock.Margin>
+                        123
+                    </TextBlock>
+
+
+
+                </StackPanel>
+            </DockPanel>
+
+        </DockPanel>
+    </Grid>
+</Window>

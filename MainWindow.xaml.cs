@@ -22,6 +22,9 @@ using Point = System.Windows.Point;
 using System.Diagnostics;
 using WebDriverManager.Helpers;
 using Path = System.IO.Path;
+using System.Windows.Controls;
+using System.Windows.Interop;
+using Microsoft.Win32;
 
 [assembly: DisableDpiAwareness]
 
@@ -32,17 +35,38 @@ namespace WPF_Traslate_Test
         public static readonly string PathOriginalScreenshot = $"{System.IO.Path.GetTempPath()}myAPP\\Original.png";
         public static readonly string PathModifiedScreenshot = $"{System.IO.Path.GetTempPath()}myAPP\\forbackground.png";
 
+        public static readonly string G1 = @$"{System.IO.Path.GetTempPath()}myAPP\g1";
+        public static readonly string G2 = @$"{System.IO.Path.GetTempPath()}myAPP\g2";
+        public static readonly string G3 = @$"{System.IO.Path.GetTempPath()}myAPP\g3";
+        public static readonly string G4 = @$"{System.IO.Path.GetTempPath()}myAPP\g4";
+        public static readonly string G5 = @$"{System.IO.Path.GetTempPath()}myAPP\g5";
+
+
+
         private static volatile Queue<Point> myPoints = new Queue<Point>();
 
         public static volatile bool MyEnetrForm;
 
         public bool myHideWindow;
-      
+
         //  public static CancellationTokenSource cts = new CancellationTokenSource();    
         //  CancellationToken ct = cts.Token;
-
+        #region Функция FastTranslate
+        void StartFastTranslate()
+        {
+            Process.Start(new ProcessStartInfo(@"C:\TEK_PROJECT\Visual Studio project\TranlateToDepl\bin\Debug\net48\TranlateToDepl.exe"));
+        }
+        #endregion
         #region Инициализация Конструктор
 
+
+
+        [DllImport("user32.dll", SetLastError = true)]
+        static extern bool ShutdownBlockReasonCreate(IntPtr hWnd, [MarshalAs(UnmanagedType.LPWStr)] string reason);
+        [DllImport("user32.dll", SetLastError = true)]
+        static extern bool ShutdownBlockReasonDestroy(IntPtr hWnd);
+        [DllImport("kernel32.dll")]
+        static extern bool SetProcessShutdownParameters(uint dwLevel, uint dwFlags);
         public MainWindow()
         {//todo Найти прогрессбар скчаивания хромдрайвера
 
@@ -62,10 +86,81 @@ namespace WPF_Traslate_Test
             MyMouseHook.MouseWheel += MyMouseSize;
             ButtonTanslate.Visibility = Visibility.Hidden;
             this.Visibility = Visibility.Hidden;
-
             
+            
+            // Объявить важность этого приложения при выключении (0x3FF = Максимальная важность!)
+            SetProcessShutdownParameters(0x3FF, SHUTDOWN_NORETRY);
+
+            SystemEvents.PowerModeChanged += SystemEvents_PowerModeChanged;
+            SystemEvents.SessionEnded += SystemEvents_Power;
+           // NotSpleep();
         }
 
+        protected  override void OnSourceInitialized(EventArgs e)
+        {
+            base.OnSourceInitialized(e);
+            HwndSource source = PresentationSource.FromVisual(this) as HwndSource;
+            source.AddHook(WndProc);
+        }
+
+        const int WM_QUERYENDSESSION = 0x0011;
+        const int WM_ENDSESSION = 0x0016;
+        const uint SHUTDOWN_NORETRY = 0x00000001;
+
+        private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+        {
+
+            if (msg == WM_QUERYENDSESSION)
+            {
+                ShutdownBlockReasonCreate(hwnd, "Никакого выключения пока программа работает!");
+                Thread.Sleep(2000);
+                ShutdownBlockReasonCreate(hwnd, lParam.ToString());
+                Thread.Sleep(10_000);
+                // Handle messages...
+                // Осторожней с MessageBox - он блокирует главный Поток, так что всё, что после него НЕ ВЫПОЛНИТСЯ!
+                //MessageBox.Show("Винда собиралась выключиться!");
+
+                // Тут выполняем всё, что мы хотели сделать до выключения/перезагрузки
+                // Симулируем работу просто усыпив Поток на 10 секунд
+                Thread.Sleep(10_000);
+                ShutdownBlockReasonCreate(hwnd, "Теперь можно выключаться!");
+
+                // Чтобы пользователь увидел надпись - усыпим Поток ещё раз, но уже на 2 секунды
+                Thread.Sleep(2_000);
+                ShutdownBlockReasonDestroy(hwnd);
+            }
+
+            return IntPtr.Zero;
+        }
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        static extern uint SetThreadExecutionState(uint esFlagsl, uint esFlagsl2);
+        //private async void NotSpleep()
+        //{
+        //    while (true)
+        //    {
+        //        await Task.Delay(200);
+        //        uint a = SetThreadExecutionState(0x00000002, 0x00000001);
+        //    }
+
+        //}
+
+
+
+
+
+
+
+        static void SystemEvents_PowerModeChanged(object sender, PowerModeChangedEventArgs e)
+        {
+            
+            Console.WriteLine(e.Mode.ToString());    // спящий режим
+        }
+
+        static void SystemEvents_Power(object sender, SessionEndedEventArgs e)
+        {
+            Console.WriteLine(e.Reason.ToString()); // выкл.
+        }
         #endregion
 
         #region Хлам Инициализация хука мыши
@@ -123,9 +218,9 @@ namespace WPF_Traslate_Test
         }
         #endregion
 
-        #region Инициализация иконки для трея, обработка нажатя по иконке
+        #region Инициализация иконки для трея, обработка нажатя по иконке, функция итерации визуальных элеметов
         public System.Windows.Forms.NotifyIcon _notifyIcon;
-        public bool MenuIsOpen = default;
+        public bool NotificationMenuIsOpen = default;
         private void SetIconToMainApplication()
         {
             _notifyIcon = new System.Windows.Forms.NotifyIcon();
@@ -133,10 +228,33 @@ namespace WPF_Traslate_Test
             _notifyIcon.Visible = true;
             _notifyIcon.Click += ClickNotifyIcon;
         }
+       
+        
+        public static IEnumerable<T> FindVisualChildren<T>(DependencyObject depObj) where T : DependencyObject /// невозможно перебрать элементы если окно не отображется
+        {
+            if (depObj != null)
+            {
+                for (int i = 0; i < VisualTreeHelper.GetChildrenCount(depObj); i++)
+                {
+                    DependencyObject child = VisualTreeHelper.GetChild(depObj, i);
+                    if (child != null && child is T)
+                    {
+                        yield return (T)child;
+                    }                    
+
+                    foreach (T childOfChild in FindVisualChildren<T>(child))
+                    {
+                        yield return childOfChild;
+                    }
+                }
+            }
+        }
+        
+
 
         public void ClickNotifyIcon(object sender, EventArgs e)
         {
-            if (MenuIsOpen)
+            if (NotificationMenuIsOpen)
             {
                 WindowCollection adssad = App.Current.Windows;
                 //  object bbb = adssad.SyncRoot;
@@ -146,13 +264,22 @@ namespace WPF_Traslate_Test
                     {
                         MenuContent menu = (MenuContent)item;
                         //menu.Dispose();
+                        MenuCheckedButton.Clear();
+                        foreach (RadioButton radioButton in MainWindow.FindVisualChildren<RadioButton>(menu))
+                        {
+                            if (radioButton.IsChecked == true)
+                            {
+                               MenuCheckedButton.Add(radioButton.Name, true);
+                                
+                            }
+                        }
                         menu.Close();
-                        MenuIsOpen = false;
+                        NotificationMenuIsOpen = false;
                     }
                 }
                 return;
             }
-            MenuIsOpen = true;
+            NotificationMenuIsOpen = true;
             App.Current.ShutdownMode = System.Windows.ShutdownMode.OnExplicitShutdown;
             One.Visibility = Visibility.Collapsed;
             One.Hide();
@@ -164,7 +291,7 @@ namespace WPF_Traslate_Test
 
             WindowCollection windowsMyApp = App.Current.Windows;
 
-            double posT = menuContent.Top = positionCursor.Y - 80.00;
+            double posT = menuContent.Top = positionCursor.Y - 200.00;
             double posL = menuContent.Left = positionCursor.X + 5;
             menuContent.Show();
             double menuWidth = default;
@@ -188,7 +315,7 @@ namespace WPF_Traslate_Test
             if (menuHeight + positionCursor.Y < resolutionHeight)
             {
                 menuContent.Top = resolutionHeight - menuHeight;
-                menuContent.Top = positionCursor.Y - (menuHeight - 80.00);
+                menuContent.Top = positionCursor.Y - (menuHeight - 200.00);
             }
 
 
@@ -198,22 +325,48 @@ namespace WPF_Traslate_Test
         #region Проверка временных файлов и их очиста
         private static void CheckTempFiles(bool delete = false)
         {
-             string pathTemporary = $"{System.IO.Path.GetTempPath()}myAPP";
-             DirectoryInfo directory = new DirectoryInfo(pathTemporary);
-             if (Directory.Exists(pathTemporary) & delete == false)
-             {
-                 // MessageBox.Show("true");
-                 // directory.Delete();
-             }
-             if (!Directory.Exists(pathTemporary) & delete == false)
-             {
-                 directory.Create();
-             }
-             if (Directory.Exists(pathTemporary) & delete == true)
-             {
-                 directory.Delete(true); //todo Изменить алгоритм очистки с изменнением папкки умолчания хромдрайвера
-             }
-        
+            string pathTemporary = $"{System.IO.Path.GetTempPath()}myAPP";
+            DirectoryInfo directory = new DirectoryInfo(pathTemporary);
+            if (Directory.Exists(pathTemporary) & delete == false)
+            {
+                // MessageBox.Show("true");
+                // directory.Delete();
+            }
+            if (!Directory.Exists(pathTemporary) & delete == false)
+            {
+                directory.Create();
+            }
+            if (Directory.Exists(pathTemporary) & delete == true)
+            {
+                directory.Delete(true); //todo Изменить алгоритм очистки с изменнением папкки умолчания хромдрайвера
+            }
+
+            List<DirectoryInfo> patchGroups = new List<DirectoryInfo>();
+                      
+            DirectoryInfo directoryg1 = new DirectoryInfo(G1);
+            patchGroups.Add(directoryg1);
+           
+            DirectoryInfo directoryg2 = new DirectoryInfo(G2);
+            patchGroups.Add(directoryg2);
+            
+            DirectoryInfo directoryg3 = new DirectoryInfo(G3);
+            patchGroups.Add(directoryg3);
+            
+            DirectoryInfo directoryg4 = new DirectoryInfo(G4);
+            patchGroups.Add(directoryg4);
+            
+            DirectoryInfo directoryg5 = new DirectoryInfo(G5);
+            patchGroups.Add(directoryg5);
+
+            foreach (var item in patchGroups)
+            {
+                if (!Directory.Exists(item.FullName) & delete == false)
+                {
+                    item.Create();
+                }
+            }
+
+
         }
         #endregion
 
@@ -233,7 +386,7 @@ namespace WPF_Traslate_Test
             {
                 try
                 {
-                    CheckTempFiles(true);
+                    CheckTempFiles(false);// delete off директории
                 }
                 catch (Exception)
                 {
@@ -256,7 +409,7 @@ namespace WPF_Traslate_Test
             keyboardHook.Install();
         }
         #endregion
-       
+
         #region Функция обновления положения окна
         public async void RefreshWindow() =>
         //double screenRealWidth = SystemParameters.PrimaryScreenWidth * (dpiBase * getScalingFactor()) / dpiBase;
@@ -266,11 +419,11 @@ namespace WPF_Traslate_Test
         //PresentationSource.FromVisual(Application.Current.MainWindow).CompositionTarget.TransformToDevice;
         //double dx = m.M11;
         //double dy = m.M22;          
-        
-            
+
+
         await Task.Run(() =>//todo Переработать алгоритм захвата окна(следования за курсором)
             {
-                
+
 
                 Dispatcher.Invoke(async () =>
                 {
@@ -318,6 +471,64 @@ namespace WPF_Traslate_Test
                 });
 
             });
+
+        #endregion
+
+        #region Функция по добавлению дополнительных окок в общий список
+        public Task ConstuctorGroupWinodws(MyCollectionWindows[] windows)
+        {
+            for (int i = 0; i < windows.Length; i++)
+            {
+                MyCollectionWindows window = windows[i];
+                window.Show();
+                window.Topmost = true;
+
+            }
+            return Task.CompletedTask;
+        }
+        public Dictionary<string, bool> MenuCheckedButton = new Dictionary<string, bool>();
+        public Task<MyCollectionWindows[]> GetWinowsG()
+        {
+            if (true)
+            {
+
+            }
+            var a = ListGroupsWindows.Where( Win => Win.Value.Item1  == 1 );
+            
+            MyCollectionWindows[] wincCollection = new MyCollectionWindows[a.Count()];
+            int cc = 0;
+            foreach (KeyValuePair<MyCollectionWindows, Tuple<int, int, int>> item in a)
+            {
+                wincCollection[cc] = item.Key;
+                cc++;
+            }
+ 
+
+            return Task.FromResult(wincCollection);
+        }
+        /// <summary> 
+        /// <para>
+        /// <param name="MyCollectionWindows"><see cref="MyCollectionWindows"/> Представляет одно окно в коллекции</param>
+        /// </para>  
+        /// <example>
+        /// This shows how to increment an integer.
+        /// <code>
+        /// var index = 5;
+        /// index++;
+        /// </code>
+        /// </example>
+        /// </summary>
+        
+        private Dictionary<MyCollectionWindows,Tuple<int,int,int>> ListGroupsWindows = new Dictionary<MyCollectionWindows, Tuple<int, int, int>>();
+        // Tuple  1. Группа от G1 до G5  2. Видимость окна? 3. 0
+        public Task SetWindowtoPool(MyCollectionWindows win)
+        {
+            ListGroupsWindows.Add(win, Tuple.Create(1,0,0));
+
+
+            return Task.CompletedTask;
+        }
+
 
         #endregion
 
@@ -468,8 +679,8 @@ namespace WPF_Traslate_Test
                 try
                 {
 
-                    BitmapSource imageFromBuffer = GetBuferImage();   
-                    
+                    BitmapSource imageFromBuffer = GetBuferImage();
+
                     if (imageFromBuffer == null)
                     {
                         if (System.IO.File.Exists(PathOriginalScreenshot))
@@ -478,10 +689,10 @@ namespace WPF_Traslate_Test
                             bi.BeginInit();
                             bi.UriSource = new Uri(PathOriginalScreenshot);
                             bi.CacheOption = BitmapCacheOption.OnLoad;
-                            bi.EndInit();         
-                            
+                            bi.EndInit();
+
                             imageFromBuffer = bi;
-                        }                           
+                        }
                     }
                     else
                     {
@@ -625,7 +836,7 @@ namespace WPF_Traslate_Test
         Point MyPosCursorLeaveFormLast = new Point();
         private void LevaeForm(object sender, MouseEventArgs e)
         {
-            
+
 
             //if (massPoint.Length == 0)
             //{
@@ -688,6 +899,22 @@ namespace WPF_Traslate_Test
                 return;
             }
         }
+
+        private void Mouse3Wheel(object sender, MouseWheelEventArgs e)
+        {
+            //MyCollectionWindows window = new MyCollectionWindows(this);
+            //window.Background = this.Background;
+            //window.Height = this.ActualHeight;
+            //window.Width = this.ActualWidth;
+            //window.Show();
+            //window.Topmost = true;
+            //Aggregate window = new Aggregate();
+            //window.Show();
+            //window.Topmost = true;
+            //StartFastTranslate();
+
+        }
+
         //private void Form1_Drag(object sender, DragEventArgs e)
         //{
         //    if (e.Data.GetDataPresent("FileDrop", false))
@@ -701,10 +928,11 @@ namespace WPF_Traslate_Test
         //}
         #endregion
 
+
     }
 
 }
-        #region Реализация логики получения перевода
+#region Реализация логики получения перевода
 public class MyClassTranslateText
 {
     public static string Query = $"Client Packs — Module makers can now create Client Packs in the toolset, which can be placed in clients My Documents\u005Cpwc\u005C folder to allow users to connect to Multiplayer Games for which they do not have the module.These.pwc files contain only the dataabsolutely necessary to run the module on the client side are useful if, for instance, youare running a persistent world and do not wish to allow clients to open your module withall of its areas, creatures, and scripts visible.";

@@ -5,16 +5,46 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WPF_Traslate_Test"
         mc:Ignorable="d"
-        Title="MenuContent" Height="80" Width="150 " WindowState="Normal" ResizeMode="NoResize" WindowStyle="None" Activated="Window_Activated" MouseEnter="Window_MouseEnter" MouseLeave="Window_MouseLeave">
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="0*"/>
-            <ColumnDefinition/>
-        </Grid.ColumnDefinitions>
-        <Button Content="Показать окно &#xD;&#xA;" VerticalAlignment="Top" HorizontalAlignment="Center" Width="150" Grid.Column="1" Height="20" Click="Button_Click_1" Background="#FF294ADE"/>
-        <Button x:Name="buttonHide" Content="Показывать процес 🗸" VerticalAlignment="Top" HorizontalAlignment="Center" Width="150" Grid.Column="1" Height="20" Margin="0,40,0,0" Background="#FF04FFFF" Click="ShowPocces"/>
-        <Button Content="Очистить форму" VerticalAlignment="Top" HorizontalAlignment="Center" Width="150" Grid.Column="1" Height="20" Click="ClearFormClick" Margin="0,20,0,0" Background="#FFFF8181"/>
-        <Button Content="Выйти" VerticalAlignment="Top" HorizontalAlignment="Center" Width="150" Grid.Column="1" Height="20" Margin="0,60,0,0" Background="#FFBBFF04" Click="Button_Click"/>
+        Title="MenuContent" WindowState="Normal" ResizeMode="NoResize" WindowStyle="None" Activated="Window_Activated" MouseEnter="Window_MouseEnter" MouseLeave="Window_MouseLeave" SizeToContent="WidthAndHeight" Topmost="True">
+    <Grid Width="300" Height="200">
+
+        <Button Content="Показать окно" VerticalAlignment="Top" HorizontalAlignment="Center" Width="300" Height="40" Click="Button_Click_1" Background="#FF294ADE" Margin="0,40,0,0"/>
+        <Button x:Name="buttonHide" Content="Показывать процес 🗸" HorizontalAlignment="Center" Width="300" Margin="0,120,0,0" Background="#FF04FFFF" Click="ShowPocces" Height="40" VerticalAlignment="Top"/>
+        <Button Content="Очистить форму" VerticalAlignment="Center" HorizontalAlignment="Center" Width="300" Height="40" Click="ClearFormClick" Background="#FFFF8181"/>
+        <Button Content="Выйти" VerticalAlignment="Top" HorizontalAlignment="Center" Width="300" Height="40" Margin="0,160,0,0" Background="#FFBBFF04" Click="Button_Click"/>
+        <Button VerticalAlignment="Top" HorizontalAlignment="Center" Width="304" Height="40" Background="#FFFFC700" Visibility="Visible"/>
+
+
+
+
+        <RadioButton x:Name="_1" Content="1" Width="24" FontStyle="Normal" HorizontalAlignment="Left" VerticalAlignment="Top" Height="16" Margin="0,2,0,0">
+            <RadioButton.RenderTransform>
+                <ScaleTransform ScaleX="2.2" ScaleY="2.2"/>
+            </RadioButton.RenderTransform>
+        </RadioButton>
+
+        <RadioButton x:Name="_2" Content="2" Width="26" Margin="58,2,0,0" FontStyle="Normal" HorizontalAlignment="Left" VerticalAlignment="Top" Height="16">
+            <RadioButton.RenderTransform>
+                <ScaleTransform ScaleX="2.2" ScaleY="2.2"/>
+            </RadioButton.RenderTransform>
+        </RadioButton>
+
+        <RadioButton x:Name="_3" Content="3" Width="25" Margin="118,2,0,0" FontStyle="Normal" HorizontalAlignment="Left" VerticalAlignment="Top" Height="16">
+            <RadioButton.RenderTransform>
+                <ScaleTransform ScaleX="2.2" ScaleY="2.2"/>
+            </RadioButton.RenderTransform>
+        </RadioButton>
+
+        <RadioButton x:Name="_4" Content="4" Width="26" Margin="178,2,0,0" FontStyle="Normal" HorizontalAlignment="Left" VerticalAlignment="Top" Height="16">
+            <RadioButton.RenderTransform>
+                <ScaleTransform ScaleX="2.2" ScaleY="2.2"/>
+            </RadioButton.RenderTransform>
+        </RadioButton>
+        <RadioButton x:Name="_5" Content="5" Width="26" Margin="240,2,0,0" FontStyle="Normal" HorizontalAlignment="Left" VerticalAlignment="Top" Height="16">
+            <RadioButton.RenderTransform>
+                <ScaleTransform ScaleX="2.2" ScaleY="2.2"/>
+            </RadioButton.RenderTransform>
+        </RadioButton>
 
     </Grid>
 </Window>
